@@ -15,7 +15,8 @@ define(['angular', 'moment'], function (angular, moment) {
         var defaultParams = {
             processInstanceId: $scope.processInstance.id
         };
-
+        
+        // get active tasks for the process instance
         $http.post(Uri.appUri(CONST_REST_URLS.task), defaultParams).success(function (data) {
             $scope.restTasks = data;
             angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('processDiagram', function (data) {
@@ -69,6 +70,8 @@ define(['angular', 'moment'], function (angular, moment) {
                     if (userTask.restTask == null) {
                         var historyParams = angular.copy(defaultParams);
                         historyParams.taskDefinitionKey = userTask.id;
+                        
+                        //get the history only for one specific task
                         $http.post(Uri.appUri(CONST_REST_URLS.historyTask), historyParams).success(function(data) {
                             if (data.length > 0) {
                                 userTask.restTask = data[0];
@@ -114,7 +117,7 @@ define(['angular', 'moment'], function (angular, moment) {
                 });
 
                 if (task.restTask != null) {
-                    var durationhtmlElement = '<div style="min-height: 20px; padding: 3px; background: white; border-radius:10px; border: 1px solid blue; color: black;">Current:' + task.restTask.durationInUnit + task.kpiData[0].kpiunit + '</div>';
+                    var durationhtmlElement = '<div style="min-height: 20px; padding: 3px; background: white; border-radius:10px; border: 1px solid red; color: black;">Current:' + task.restTask.durationInUnit + task.kpiData[0].kpiunit + '</div>';
 
                     overlays.add(task.id, {
                         position: {

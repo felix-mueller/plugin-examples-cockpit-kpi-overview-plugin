@@ -68,4 +68,35 @@
       <url>https://app.camunda.com/nexus/content/groups/public</url>
     </repository>
   </repositories>
+  
+  <build>
+  <plugins>
+  <plugin>
+    <artifactId>maven-antrun-plugin</artifactId>
+    <version>1.6</version>
+    <executions>
+        <execution>
+            <phase>package</phase>
+            <configuration>
+                <target>
+                    <copy file="target/cockpit-kpi-overview-plugin-1.0-SNAPSHOT.jar"
+                        tofile="/Users/felix/Downloads/camunda-bpm-tomcat-7.5.0/server/apache-tomcat-8.0.24/webapps/camunda/WEB-INF/lib/cockpit-kpi-overview-plugin-1.0-SNAPSHOT.jar" />
+                	<exec
+                  		dir="/Users/felix/Downloads/camunda-bpm-tomcat-7.5.0/server/apache-tomcat-8.0.24/bin"
+                  		executable="./shutdown.sh"
+                  		failonerror="true"/>
+                  	<exec
+                  		dir="/Users/felix/Downloads/camunda-bpm-tomcat-7.5.0/server/apache-tomcat-8.0.24/bin"
+                  		executable="./startup.sh"
+                  		failonerror="true"/>
+                </target>
+            </configuration>
+            <goals>
+                <goal>run</goal>
+            </goals>
+        </execution>
+    </executions>
+	</plugin>
+	</plugins>
+  </build>
 </project>
