@@ -1,4 +1,4 @@
-# Cockpit Failed Jobs Plugin
+# Cockpit KPI Overview Plugin
 
 A Cockpit plugin which shows a grid list of [Failed Jobs][1] on the start page of Cockpit and has three columns: `Job ID`, `Process instance ID` and `Exception`.
 
@@ -42,10 +42,3 @@ Add the plugin as a dependency to the Cockpit `pom.xml` and rebuild the Camunda 
 ## License
 
 Use under terms of the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
-
-
-[1]: https://docs.camunda.org/manual/webapps/cockpit/failed-jobs/
-[2]: https://docs.camunda.org/manual/user-guide/process-engine/process-engine-concepts/#jobs-and-job-definitions
-[3]: https://docs.camunda.org/manual/user-guide/process-engine/the-job-executor/
-[4]: https://docs.camunda.org/manual/user-guide/process-engine/incidents/
-[5]: https://docs.camunda.org/manual/user-guide/process-engine/transactions-in-processes/#transaction-boundaries

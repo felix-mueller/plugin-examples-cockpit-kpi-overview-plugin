@@ -1,48 +1,51 @@
 <table class="cam-table">
   <thead>
     <tr>
+      <th>Done?</th>
       <th>User Task</th>
       <th>KPI</th>
       <th>Started</th>
       <th>Finished</th>
       <th>Duration</th>
-      <th>Overdue (was or is)</th>
+      <th>Overdue</th>
     </tr>
   </thead>
   <tbody>
     <tr ng-repeat="task in tasks">
-
       <td>
-      	<a cam-select-activity-instance="task.restTask.activityId" ng-href="{{ task.link }}" ng-if="task.link"><b>{{ task.name }}</b> ({{ task.id }})</a>
+        <span ng-if="task.restTask.endTime" class="glyphicon glyphicon-ok"></span>
+      </td>
+      <td>
+        <a cam-select-activity-instance="task.restTask.activityId" ng-href="{{ task.link }}" ng-if="task.link"><b>{{ task.name }}</b> ({{ task.id }})</a>
         <span ng-if="!task.link">
           <b>{{ task.name }}</b> ({{ task.id }})
         </span>
       </td>
 
       <td>
-      	<p ng-repeat="kpiData in task.kpiData">
-      		{{ kpiData.kpi }} {{ kpiData.kpiunit }}
-      	</p>
-      </td>
-		<td>
-      	<p>
-      		{{ task.restTask.created  }} {{ task.restTask.startTime  }}
-      	</p>
+        <p ng-repeat="kpiData in task.kpiData">
+          {{ kpiData.kpi }} {{ kpiData.kpiunit }}
+        </p>
       </td>
       <td>
-      <p>
-      		{{ task.restTask.endTime }}
-      	</p>
+        <p>
+          {{ task.restTask.created  }} {{ task.restTask.startTime  }}
+        </p>
       </td>
       <td>
-      	<p>
-      		{{ task.restTask.duration }}
-      	</p>
+        <p>
+          {{ task.restTask.endTime }}
+        </p>
       </td>
-       <td>
-      	<p>
-      		{{ task.restTask.overdue }} ({{task.restTask.overdueTime}})
-      	</p>
+      <td>
+        <p>
+          {{ task.restTask.duration }}
+        </p>
+      </td>
+      <td>
+        <p>
+          <span ng-if="task.restTask.overdue" class="glyphicon glyphicon-exclamation-sign"> </span>{{ task.restTask.overdue }} ({{task.restTask.overdueTime}})
+        </p>
       </td>
     </tr>
 
@@ -62,13 +65,13 @@
 </table>
 
 <pagination ng-if="pages.total > pages.size"
-            class="pagination-sm"
+  class="pagination-sm"
 
-            page="pages.current"
-            ng-model="pages.current"
+  page="pages.current"
+  ng-model="pages.current"
 
-            total-items="pages.total"
-            items-per-page="pages.size"
+  total-items="pages.total"
+  items-per-page="pages.size"
 
-            max-size="7"
-            boundary-links="true"></pagination>
+  max-size="7"
+  boundary-links="true"></pagination>
