@@ -14,7 +14,8 @@ var CONST_REST_URLS = {
     'historyTask': 'engine://engine/:engine/history/task/',
     'processInstance': 'plugin://kpi-overview-plugin/:engine/process-instance-detail/',
     'processDefinitionHistory': 'plugin://kpi-overview-plugin/:engine/process-definition-history/',
-    'historyActivityInstance': 'engine://engine/:engine/history/activity-instance'
+    'historyActivityInstance': 'engine://engine/:engine/history/activity-instance',
+    'historyProcessInstance': 'engine://engine/:engine/history/process-instance/'
 };
 /*global
   define,$
@@ -30,7 +31,7 @@ define(['angular', 'moment'], function (angular, moment) {
         };
 
         //get start time for current process instance
-        $http.get(Uri.appUri(CONST_REST_URLS.processInstance+$scope.processInstance.id), {}).success(function (data) {
+        $http.get(Uri.appUri(CONST_REST_URLS.historyProcessInstance+$scope.processInstance.id), {}).success(function (data) {
         	if ($scope.processInst) {
         		$scope.processInst.startTime = data.startTime;
         	} else {
@@ -44,13 +45,15 @@ define(['angular', 'moment'], function (angular, moment) {
         });
         
         //get history for this process to calculate average duration
-        $http.get(Uri.appUri(CONST_REST_URLS.processDefinitionHistory+$scope.processInstance.definitionId), {}).success(function (data) {
+        $http.get(Uri.appUri(CONST_REST_URLS.historyProcessInstance), {'processDefinitionId': $scope.processInstance.definitionId}).success(function (data) {
             var durations = 0;
             
             data.forEach( function (instance) {
-            	var startTimeMoment = new moment(instance.startTime);
-            	var endTimeMoment = new moment(instance.endTime);
-            	durations += parseInt(endTimeMoment.diff(startTimeMoment));
+            	if (instance.endTime) {
+            		var startTimeMoment = new moment(instance.startTime);
+            		var endTimeMoment = new moment(instance.endTime);
+                	durations += parseInt(endTimeMoment.diff(startTimeMoment));
+            	}
             });
             if ($scope.processInst) {
             	$scope.processInst.avgDuration = (durations / data.length);
@@ -59,7 +62,6 @@ define(['angular', 'moment'], function (angular, moment) {
             			'avgDuration': (durations / data.length)
             	};
             }
-        	console.log(data);
          });
 
         $http.post(Uri.appUri(CONST_REST_URLS.historyActivityInstance), defaultParams).success(function (activityInstances) {
@@ -132,6 +134,8 @@ define(['angular', 'moment'], function (angular, moment) {
                 	} else if (task.taskActivity != null && !task.taskActivity.overdue){
                 		var htmlElement = '<div style="width:20px; height:20px; line-height: 21px; text-align: center; border-radius: 10px; background: green; border: 1px solid black; color: black; "><span class="glyphicon glyphicon-ok"></span></div>';
                     	
+                	} else {
+                		var htmlElement = '<div></div>';
                 	}
                 	
 	                overlays.add(task.id, {

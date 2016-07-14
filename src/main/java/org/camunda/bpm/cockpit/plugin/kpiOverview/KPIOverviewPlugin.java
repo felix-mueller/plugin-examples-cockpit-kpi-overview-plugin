@@ -24,9 +24,4 @@ public class KPIOverviewPlugin extends AbstractCockpitPlugin {
 
     return classes;
   }
-  
-  @Override
-  public List<String> getMappingFiles() {
-    return Arrays.asList("org/camunda/bpm/cockpit/plugin/kpi/queries/camunda-kpi-queries.xml");
-  }
 }
