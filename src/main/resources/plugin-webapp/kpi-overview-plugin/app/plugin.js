@@ -1,8 +1,14 @@
-var CONST_BPMN_TYPES = {
-    'all': '',
-    'userTask': 'bpmn:UserTask',
-    'scriptTask': 'bpmn:ScriptTask'
-};
+var CONST_BPMN_TYPES = [
+    'bpmn:UserTask',
+    'bpmn:ScriptTask',
+    'bpmn:ServiceTask',
+    'bpmn:SendTask',
+    'bpmn:ReceiveTask',
+    'bpmn:BusinessRuleTask'
+];
+var CONST_TASK_TYPES = [
+		'userTask', 'scriptTask', 'serviceTask', 'sendTask', 'receiveTask', 'businessRuleTask'
+];
 var CONST_REST_URLS = {
     'task': 'engine://engine/:engine/task/',
     'historyTask': 'engine://engine/:engine/history/task/',
@@ -56,108 +62,89 @@ define(['angular', 'moment'], function (angular, moment) {
         	console.log(data);
          });
 
-        // get active tasks for the process instance
-        $http.post(Uri.appUri(CONST_REST_URLS.task), defaultParams).success(function (data) {
-            $scope.restTasks = data;
-            angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('processDiagram', function (data) {
-
-                var userTasks = [];
-                if (data.bpmnElements != null) {
-                    Object.keys(data.bpmnElements).filter(function (element) {
-                        if (data.bpmnElements[element].$type === CONST_BPMN_TYPES.userTask || data.bpmnElements[element].$type === CONST_BPMN_TYPES.scriptTask) {
-                            userTasks.push(data.bpmnElements[element]);
-                        }
-                    });
-                }
-
-                userTasks.forEach(function (userTask, index) {
-
-                    //add the KPI data from processDefinition
-                    userTask.kpiData = [];
-                    userTask.kpiData.push({
-                        'kpi': userTask.$attrs['camunda:kpi'],
-                        'kpiunit': userTask.$attrs['camunda:kpiunit']
-                    });
-
-                    //add restData to task
-                    $scope.restTasks.filter(function (restTask) {
-                        if (restTask.taskDefinitionKey === userTask.id) {
-                            userTask.restTask = restTask;
-                            userTask.restTask.activityId = userTask.restTask.taskDefinitionKey + ':' + userTask.restTask.id;
-                            userTask.link = '#/process-instance/' + $scope.processInstance.id + '?detailsTab=kpi-overview&activityInstanceIds=' + userTask.restTask.activityId;
-
-                            if (userTask.restTask.created != null) {
-                                var creationMoment = new moment(userTask.restTask.created);
-                                var currentMoment = new moment();
-                                var diff = creationMoment.diff(currentMoment);
-                                var duration = moment.duration(diff).humanize();
-                                userTask.restTask.duration = duration;
-
-                                var durationInUnit = currentMoment.diff(creationMoment, userTask.$attrs['camunda:kpiunit']);
-                                userTask.restTask.durationInUnit = durationInUnit;
-                                if (durationInUnit > userTask.$attrs['camunda:kpi']) {
-                                    userTask.restTask.overdue = true;
-                                    userTask.restTask.overdueTime = durationInUnit - parseInt(userTask.$attrs['camunda:kpi']) + userTask.$attrs['camunda:kpiunit'];
-                                } else {
-                                    userTask.restTask.overdue = false;
-                                }
-                            }
-                            addOverlay(userTask);
-                        }
-                    });
-
-                    //Try history data when no task is there
-                    if (userTask.restTask == null) {
-                        var historyParams = angular.copy(defaultParams);
-                        historyParams.taskDefinitionKey = userTask.id;
-
-                        //get the history only for one specific task
-                        $http.post(Uri.appUri(CONST_REST_URLS.historyTask), historyParams).success(function(data) {
-                            if (data.length > 0) {
-                                userTask.restTask = data[0];
-
-                                var startMoment = new moment(userTask.restTask.startTime);
-                                var endMoment = new moment(userTask.restTask.endTime);
-                                var diff = endMoment.diff(startMoment);
-                                var duration = moment.duration(diff).humanize();
-                                userTask.restTask.duration = duration;
-
-                                var durationInUnit = endMoment.diff(startMoment, userTask.$attrs['camunda:kpiunit']);
-                                userTask.restTask.durationInUnit = durationInUnit;
-                                if (durationInUnit > parseInt(userTask.$attrs['camunda:kpi'])) {
-                                    userTask.restTask.overdue = true;
-                                    userTask.restTask.overdueTime = durationInUnit - parseInt(userTask.$attrs['camunda:kpi']) + userTask.$attrs['camunda:kpiunit'];
-                                } else {
-                                    userTask.restTask.overdue = false;
-                                }
-
-                                userTasks[index] = userTask;
-                                addOverlay(userTask);
-                            }
+        $http.post(Uri.appUri(CONST_REST_URLS.historyActivityInstance), defaultParams).success(function (activityInstances) {
+        	
+        	var taskActivityInstances = activityInstances.filter(function(activityInstance) {
+        		if (CONST_TASK_TYPES.indexOf(activityInstance.activityType)>-1) {
+        			return true;
+        		} else {
+        			return false;
+        		}
+        	});
+        	
+        	var tasks = [];
+        	angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('processDiagram', function (data) {
+        		if (data.bpmnElements != null) {
+        			Object.keys(data.bpmnElements).forEach(function(key) {
+        				var bpmnElement = data.bpmnElements[key];
+        				//add the KPI data from processDefinition
+                        bpmnElement.kpiData = [];
+                        bpmnElement.kpiData.push({
+                            'kpi': bpmnElement.$attrs['camunda:kpi'],
+                            'kpiunit': bpmnElement.$attrs['camunda:kpiunit']
                         });
-                    }
+        				if (CONST_BPMN_TYPES.indexOf(bpmnElement.$type)>-1) {
+        					taskActivityInstances.forEach(function(taskActivity) {
+        						if (taskActivity.activityId === bpmnElement.id) {
+        							bpmnElement.taskActivity = taskActivity;
+        							bpmnElement.link = '#/process-instance/' + $scope.processInstance.id + '?detailsTab=kpi-overview&activityInstanceIds=' + bpmnElement.taskActivity.activityId;
+        							
+        							var startMoment = new moment(taskActivity.startTime);
+                                    if (taskActivity.endTime) {
+                                    	var endMoment = new moment(taskActivity.endTime);
+                                    } else {
+                                    	var endMoment = new moment();
+                                    }
+                                    var diff = endMoment.diff(startMoment);
+                                    var duration = moment.duration(diff).humanize();
+                                    var durationInUnit = endMoment.diff(startMoment, bpmnElement.$attrs['camunda:kpiunit']);
+                                    
+                                    bpmnElement.taskActivity.duration = duration;
+                                    bpmnElement.taskActivity.durationInUnit = durationInUnit;
+                                    if (durationInUnit > parseInt(bpmnElement.$attrs['camunda:kpi'])) {
+                                    	bpmnElement.taskActivity.overdue = true;
+                                    	bpmnElement.taskActivity.overdueTime = durationInUnit - parseInt(bpmnElement.$attrs['camunda:kpi']) + bpmnElement.$attrs['camunda:kpiunit'];
+                                    } else {
+                                    	bpmnElement.taskActivity.overdue = false;
+                                    }
+        							
+        							return true;
+        						}
+        					});
 
-                    userTasks[index] = userTask;
-                });
-                $scope.tasks = userTasks;
-            });
+        					tasks.push(bpmnElement);
+        					addOverlay(bpmnElement);
+        				}
+        			});
+        			$scope.tasks = tasks;
+        		}
+        	});
         });
+        
 
         function addOverlay(task) {
             angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('viewer', function(viewer) {
                 var overlays = viewer.get('overlays');
-                var htmlElement = '<div style="min-height: 20px; padding: 3px; background: #70b8db; border-radius:10px; border: 1px solid black; color: black;">Target:' + task.kpiData[0].kpi + task.kpiData[0].kpiunit + '</div>';
-
-                overlays.add(task.id, {
-                    position: {
-                        bottom: 10,
-                        right: 50
-                    },
-                    html: htmlElement
-                });
-
+                if ( task.kpiData != null && task.kpiData.length>0 && task.kpiData[0].kpi != null) {
+	                //var htmlElement = '<div style="min-height: 20px; padding: 3px; background: #70b8db; border-radius:10px; border: 1px solid black; color: black;">Target:' + task.kpiData[0].kpi + task.kpiData[0].kpiunit + '</div>';
+                	if (task.taskActivity != null && task.taskActivity.overdue) {
+                		var htmlElement = '<div style="width:20px; height:20px; line-height: 21px; text-align: center; border-radius: 10px; background: red; border: 1px solid black; color: black;"><span class="glyphicon glyphicon-exclamation-sign"></span></div>';
+                	} else if (task.taskActivity != null && !task.taskActivity.overdue){
+                		var htmlElement = '<div style="width:20px; height:20px; line-height: 21px; text-align: center; border-radius: 10px; background: green; border: 1px solid black; color: black; "><span class="glyphicon glyphicon-ok"></span></div>';
+                    	
+                	}
+                	
+	                overlays.add(task.id, {
+	                    position: {
+	                        bottom: 10,
+	                        right: 10
+	                    },
+	                    html: htmlElement
+	                });
+                }
+	                
                 if (task.restTask != null) {
-                    var durationhtmlElement = '<div style="min-height: 20px; padding: 3px; background: #70b8db; border-radius:10px; border: 1px solid red; color: black;">Current:' + task.restTask.durationInUnit + task.kpiData[0].kpiunit + '</div>';
+                    var durationhtmlElement = '<div style="min-height: 20px; padding: 3px; background: #70b8db; border-radius:10px; border: 1px solid red; color: black;">Current:' + task.taskActivity.durationInUnit + task.kpiData[0].kpiunit + '</div>';
 
                     overlays.add(task.id, {
                         position: {

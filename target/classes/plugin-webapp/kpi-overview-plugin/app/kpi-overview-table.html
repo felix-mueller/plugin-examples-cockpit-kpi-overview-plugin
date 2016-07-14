@@ -42,7 +42,7 @@
         {{task.$type}}
       </td>
       <td>
-        <a cam-select-activity-instance="task.restTask.activityId" ng-href="{{ task.link }}" ng-if="task.link"><b>{{ task.name }}</b> ({{ task.id }})</a>
+        <a cam-select-activity-instance="task.taskActivity.activityId" ng-href="{{ task.link }}" ng-if="task.link"><b>{{ task.name }}</b> ({{ task.id }})</a>
         <span ng-if="!task.link">
           <b>{{ task.name }}</b> ({{ task.id }})
         </span>
@@ -55,22 +55,22 @@
       </td>
       <td>
         <p>
-          {{ task.restTask.created  }} {{ task.restTask.startTime  }}
+         {{ task.taskActivity.startTime  }}
         </p>
       </td>
       <td>
         <p>
-          {{ task.restTask.endTime }}
+          {{ task.taskActivity.endTime }}
         </p>
       </td>
       <td>
         <p>
-          {{ task.restTask.duration }}
+          {{ task.taskActivity.duration }}
         </p>
       </td>
       <td>
         <p>
-          <span ng-if="task.restTask.overdue" class="glyphicon glyphicon-exclamation-sign"> </span>{{ task.restTask.overdue }} <span ng-if="task.restTask.overdue">({{task.restTask.overdueTime}})</span>
+          <span ng-if="task.taskActivity.overdue" class="glyphicon glyphicon-exclamation-sign"> </span> <span ng-if="task.taskActivity.overdue">({{task.taskActivity.overdueTime}})</span>
         </p>
       </td>
     </tr>
