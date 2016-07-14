@@ -36,7 +36,7 @@
   <tbody>
     <tr ng-repeat="task in tasks | filter:search">
       <td>
-        <span ng-if="task.restTask.endTime" class="glyphicon glyphicon-ok"></span>
+        <span ng-if="task.taskActivity.endTime" class="glyphicon glyphicon-ok"></span>
       </td>
       <td>
         {{task.$type}}
@@ -70,7 +70,9 @@
       </td>
       <td>
         <p>
-          <span ng-if="task.taskActivity.overdue" class="glyphicon glyphicon-exclamation-sign"> </span> <span ng-if="task.taskActivity.overdue">({{task.taskActivity.overdueTime}})</span>
+        	<span ng-if="task.taskActivity.overdue" class="glyphicon glyphicon-exclamation-sign" style="background-color:red; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span> <span ng-if="task.taskActivity.overdue">({{task.taskActivity.overdueTime}})</span>
+        	<span ng-if="!task.taskActivity.overdue && task.taskActivity.startTime" class="glyphicon glyphicon-ok" style="background-color:green; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span>
+        
         </p>
       </td>
     </tr>
