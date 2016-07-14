@@ -7,7 +7,8 @@ var CONST_REST_URLS = {
     'task': 'engine://engine/:engine/task/',
     'historyTask': 'engine://engine/:engine/history/task/',
     'processInstance': 'plugin://kpi-overview-plugin/:engine/process-instance-detail/',
-    'processDefinitionHistory': 'plugin://kpi-overview-plugin/:engine/process-definition-history/'
+    'processDefinitionHistory': 'plugin://kpi-overview-plugin/:engine/process-definition-history/',
+    'historyActivityInstance': 'engine://engine/:engine/history/activity-instance'
 };
 /*global
   define,$
