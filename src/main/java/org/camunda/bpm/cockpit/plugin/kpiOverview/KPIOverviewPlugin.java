@@ -1,6 +1,8 @@
 package org.camunda.bpm.cockpit.plugin.kpiOverview;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.camunda.bpm.cockpit.plugin.kpiOverview.resources.KPIOverviewPluginRootResource;
@@ -21,5 +23,10 @@ public class KPIOverviewPlugin extends AbstractCockpitPlugin {
     classes.add(KPIOverviewPluginRootResource.class);
 
     return classes;
+  }
+  
+  @Override
+  public List<String> getMappingFiles() {
+    return Arrays.asList("org/camunda/bpm/cockpit/plugin/kpi/queries/camunda-kpi-queries.xml");
   }
 }

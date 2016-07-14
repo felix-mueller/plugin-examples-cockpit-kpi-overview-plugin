@@ -1,9 +1,13 @@
 var CONST_BPMN_TYPES = {
-    'userTask': 'bpmn:UserTask'
+    'all': '',
+    'userTask': 'bpmn:UserTask',
+    'scriptTask': 'bpmn:ScriptTask'
 };
 var CONST_REST_URLS = {
     'task': 'engine://engine/:engine/task/',
-    'historyTask': 'engine://engine/:engine/history/task/'
+    'historyTask': 'engine://engine/:engine/history/task/',
+    'processInstance': 'plugin://kpi-overview-plugin/:engine/process-instance-detail/',
+    'processDefinitionHistory': 'plugin://kpi-overview-plugin/:engine/process-definition-history/'
 };
 /*global
   define,$
@@ -11,11 +15,46 @@ var CONST_REST_URLS = {
 define(['angular', 'moment'], function (angular, moment) {
     'use strict';
     var KPIOverviewController = ['$scope', '$http', 'Uri', 'camAPI', function ($scope, $http, Uri, camAPI) {
+        $scope.typeFilters = CONST_BPMN_TYPES;
+
         // get the 'creation time date' of task
         var defaultParams = {
             processInstanceId: $scope.processInstance.id
         };
+
+        //get start time for current process instance
+        $http.get(Uri.appUri(CONST_REST_URLS.processInstance+$scope.processInstance.id), {}).success(function (data) {
+        	if ($scope.processInst) {
+        		$scope.processInst.startTime = data.startTime;
+        	} else {
+        		$scope.processInst = data;
+        	}
+        	
+        	var creationMoment = new moment(data.startTime);
+            var currentMoment = new moment();
+            var diff = currentMoment.diff(creationMoment);
+            $scope.processInst.currentDuration = moment.duration(diff).humanize();
+        });
         
+        //get history for this process to calculate average duration
+        $http.get(Uri.appUri(CONST_REST_URLS.processDefinitionHistory+$scope.processInstance.definitionId), {}).success(function (data) {
+            var durations = 0;
+            
+            data.forEach( function (instance) {
+            	var startTimeMoment = new moment(instance.startTime);
+            	var endTimeMoment = new moment(instance.endTime);
+            	durations += parseInt(endTimeMoment.diff(startTimeMoment));
+            });
+            if ($scope.processInst) {
+            	$scope.processInst.avgDuration = (durations / data.length);
+            } else {
+            	$scope.processInst = {
+            			'avgDuration': (durations / data.length)
+            	};
+            }
+        	console.log(data);
+         });
+
         // get active tasks for the process instance
         $http.post(Uri.appUri(CONST_REST_URLS.task), defaultParams).success(function (data) {
             $scope.restTasks = data;
@@ -24,7 +63,7 @@ define(['angular', 'moment'], function (angular, moment) {
                 var userTasks = [];
                 if (data.bpmnElements != null) {
                     Object.keys(data.bpmnElements).filter(function (element) {
-                        if (data.bpmnElements[element].$type === CONST_BPMN_TYPES.userTask) {
+                        if (data.bpmnElements[element].$type === CONST_BPMN_TYPES.userTask || data.bpmnElements[element].$type === CONST_BPMN_TYPES.scriptTask) {
                             userTasks.push(data.bpmnElements[element]);
                         }
                     });
@@ -70,7 +109,7 @@ define(['angular', 'moment'], function (angular, moment) {
                     if (userTask.restTask == null) {
                         var historyParams = angular.copy(defaultParams);
                         historyParams.taskDefinitionKey = userTask.id;
-                        
+
                         //get the history only for one specific task
                         $http.post(Uri.appUri(CONST_REST_URLS.historyTask), historyParams).success(function(data) {
                             if (data.length > 0) {
@@ -106,7 +145,7 @@ define(['angular', 'moment'], function (angular, moment) {
         function addOverlay(task) {
             angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('viewer', function(viewer) {
                 var overlays = viewer.get('overlays');
-                var htmlElement = '<div style="min-height: 20px; padding: 3px; background: white; border-radius:10px; border: 1px solid blue; color: black;">Target:' + task.kpiData[0].kpi + task.kpiData[0].kpiunit + '</div>';
+                var htmlElement = '<div style="min-height: 20px; padding: 3px; background: #70b8db; border-radius:10px; border: 1px solid black; color: black;">Target:' + task.kpiData[0].kpi + task.kpiData[0].kpiunit + '</div>';
 
                 overlays.add(task.id, {
                     position: {
@@ -117,7 +156,7 @@ define(['angular', 'moment'], function (angular, moment) {
                 });
 
                 if (task.restTask != null) {
-                    var durationhtmlElement = '<div style="min-height: 20px; padding: 3px; background: white; border-radius:10px; border: 1px solid red; color: black;">Current:' + task.restTask.durationInUnit + task.kpiData[0].kpiunit + '</div>';
+                    var durationhtmlElement = '<div style="min-height: 20px; padding: 3px; background: #70b8db; border-radius:10px; border: 1px solid red; color: black;">Current:' + task.restTask.durationInUnit + task.kpiData[0].kpiunit + '</div>';
 
                     overlays.add(task.id, {
                         position: {

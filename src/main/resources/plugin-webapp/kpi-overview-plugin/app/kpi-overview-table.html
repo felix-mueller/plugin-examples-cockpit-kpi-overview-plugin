@@ -1,8 +1,31 @@
 <table class="cam-table">
+  <caption>Process Instance</caption>
+  <thead>
+    <tr>
+      <th>Started</th>
+      <th>Average Duration</th>
+      <th>Target Duration</th>
+      <th>Current Duration</th>
+      <th>Overdue</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>{{processInst.startTime}}</td>
+      <td>{{processInst.avgDuration}}</td>
+      <td>{{processInst.targetDuration}}</td>
+      <td>{{processInst.currentDuration}}</td>
+      <td>{{processInst.overdue}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="cam-table">
   <thead>
     <tr>
       <th>Done?</th>
-      <th>User Task</th>
+      <th>Type <select class="form-control" ng-model="search.$type" value=""><option ng-repeat="(key,value) in typeFilters" value="{{value}}">{{key}}</option></select></th>
+      <th>Task</th>
       <th>KPI</th>
       <th>Started</th>
       <th>Finished</th>
@@ -11,9 +34,12 @@
     </tr>
   </thead>
   <tbody>
-    <tr ng-repeat="task in tasks">
+    <tr ng-repeat="task in tasks | filter:search">
       <td>
         <span ng-if="task.restTask.endTime" class="glyphicon glyphicon-ok"></span>
+      </td>
+      <td>
+        {{task.$type}}
       </td>
       <td>
         <a cam-select-activity-instance="task.restTask.activityId" ng-href="{{ task.link }}" ng-if="task.link"><b>{{ task.name }}</b> ({{ task.id }})</a>
@@ -44,7 +70,7 @@
       </td>
       <td>
         <p>
-          <span ng-if="task.restTask.overdue" class="glyphicon glyphicon-exclamation-sign"> </span>{{ task.restTask.overdue }} ({{task.restTask.overdueTime}})
+          <span ng-if="task.restTask.overdue" class="glyphicon glyphicon-exclamation-sign"> </span>{{ task.restTask.overdue }} <span ng-if="task.restTask.overdue">({{task.restTask.overdueTime}})</span>
         </p>
       </td>
     </tr>
