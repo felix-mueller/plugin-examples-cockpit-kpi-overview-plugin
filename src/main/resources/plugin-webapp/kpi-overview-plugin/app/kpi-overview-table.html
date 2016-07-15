@@ -1,21 +1,23 @@
 <table class="cam-table">
-  <caption>Process Instance</caption>
   <thead>
     <tr>
       <th>Start</th>
-      <th>Average Duration</th>
       <th>Target Duration</th>
       <th>Current Duration</th>
-      <th>Overdue</th>
+      <th>Process Overdue</th>
+      <th>Tasks Overdue</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td>{{processInst.startTime}}</td>
-      <td>{{processInst.avgDuration}}</td>
       <td>{{processInst.targetDuration}}</td>
       <td>{{processInst.currentDuration}}</td>
-      <td>{{processInst.overdue}}</td>
+      <td>
+      	<span ng-if="processInst.overdue" class="glyphicon glyphicon-exclamation-sign" style="background-color:red; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span>
+        <span ng-if="!processInst.overdue" class="glyphicon glyphicon-ok" style="background-color:green; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span>
+      </td>
+      <td>-</td>
     </tr>
   </tbody>
 </table>
@@ -24,7 +26,7 @@
   <thead>
     <tr>
       <th>Done?</th>
-      <th>Type <select class="form-control" ng-model="search.$type" value=""><option ng-repeat="(key,value) in typeFilters" value="{{value}}">{{key}}</option></select></th>
+      <th><select class="form-control" ng-model="search.$type" value=""><option value="">All Types</option><option ng-repeat="filter in typeFilters" value="{{filter}}">{{filter}}</option></select></th>
       <th>Task</th>
       <th>KPI</th>
       <th>Started</th>
@@ -70,7 +72,7 @@
       </td>
       <td>
         <p>
-        	<span ng-if="task.taskActivity.overdue" class="glyphicon glyphicon-exclamation-sign" style="background-color:red; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span> <span ng-if="task.taskActivity.overdue">({{task.taskActivity.overdueTime}})</span>
+        	<span ng-if="task.taskActivity.overdue" tooltip="Overdue for {{task.taskActivity.overdueTime}}" class="glyphicon glyphicon-exclamation-sign" style="background-color:red; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span>
         	<span ng-if="!task.taskActivity.overdue && task.taskActivity.startTime" class="glyphicon glyphicon-ok" style="background-color:green; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span>
         
         </p>
