@@ -1,27 +1,42 @@
 <table class="cam-table">
-  <thead>
-    <tr>
-    	<th>KPI State</th>
-      <th>ID</th>
-      <th>Start Time</th>
-      <th>End Time</th>
-      <th>Target</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr ng-repeat="processInst in processInstances">
-    	<td>
-			<span tooltip="Process overdue for {{processInst.overdueInUnit}}" ng-if="processInst.overdue" class="glyphicon glyphicon-exclamation-sign" style="color: black; line-height: 17px; background-color:red; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span>
-			<span tooltip="Process not overdue Duration: {{processInst.currentDurationInUnit}}" ng-if="!processInst.overdue" class="glyphicon glyphicon-ok" style="color: black; line-height: 17px; background-color:green; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span>
-			<span tooltip="{{processInst.tasksoverdue}} running task(s) overdue" ng-if="processInst.tasksoverdue > 0" class="glyphicon glyphicon-exclamation-sign" style="color: black; line-height: 17px; background-color:red; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span>
-			<span tooltip="No running tasks overdue" ng-if="processInst.tasksoverdue == 0" class="glyphicon glyphicon-ok" style="color: black; line-height: 17px; background-color:green; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span>
-			<span tooltip="{{processInst.completedtasksoverdue}} completed task(s) overdue" ng-if="processInst.completedtasksoverdue > 0" class="glyphicon glyphicon-exclamation-sign" style="color: black; line-height: 17px; background-color:red; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span>
-			<span tooltip="No completed tasks overdue" ng-if="processInst.completedtasksoverdue == 0" class="glyphicon glyphicon-ok" style="color: black; line-height: 17px; background-color:green; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span>
-		</td>
-		<td><a ng-if="!processInst.endTime" ng-href="{{processInst.link}}" href="{{processInst.link}}">{{processInst.id}}</a> <span ng-if="processInst.endTime">{{processInst.id}}</span></td>
-		<td>{{processInst.startTime}}</td>
-		<td>{{processInst.endTime || '-'}}</td>
-		<td>{{processInst.targetDuration}}</td>
-    </tr>
-  </tbody>
+    <thead>
+        <tr>
+            <th>Process
+                <br/>Instance</th>
+            <th>Active
+                <br/>Tasks</th>
+            <th>Completed
+                <br/>Tasks</th>
+            <th>ID</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Target</th>
+            <th>Duration</th>
+            <th>Active overdue tasks</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="processInst in processInstances | filter:search">
+            <td>
+                <span tooltip="Process overdue for {{processInst.overdueInUnit}}" ng-if="processInst.overdue" class="glyphicon glyphicon-exclamation-sign" style="color: #b5152b; line-height: 17px; text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>
+                <span tooltip="Process not overdue. Duration: {{processInst.currentDurationInUnit}}" ng-if="!processInst.overdue" class="glyphicon glyphicon-ok-sign" style="color: green; line-height: 17px; text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>
+            </td>
+            <td>
+                <span tooltip="{{processInst.tasksoverdue}} running task(s) overdue" ng-if="processInst.tasksoverdue > 0" class="glyphicon glyphicon-exclamation-sign" style="color: #b5152b; line-height: 17px;text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>
+                <span tooltip="No running tasks overdue" ng-if="processInst.tasksoverdue == 0" class="glyphicon glyphicon-ok-sign" style="color: green; line-height: 17px; text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>
+            </td>
+            <td>
+                <span tooltip="{{processInst.completedtasksoverdue}} completed task(s) overdue" ng-if="processInst.completedtasksoverdue > 0" class="glyphicon glyphicon-exclamation-sign" style="color: orange; line-height: 17px; text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>
+                <span tooltip="No completed tasks overdue" ng-if="processInst.completedtasksoverdue == 0" class="glyphicon glyphicon-ok-sign" style="color: green; line-height: 17px; text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>
+            </td>
+            <td><a ng-href="{{processInst.link}}" href="{{processInst.link}}">{{processInst.id}}</a></td>
+            <td>{{processInst.startTime}}</td>
+            <td>{{processInst.endTime || '-'}}</td>
+            <td>{{processInst.targetDuration}}</td>
+            <td>{{processInst.currentDurationInUnit}}</td>
+            <td>
+                <p ng-repeat="taskId in processInst.tasksOverdueIds">{{taskId}}</p>
+            </td>
+        </tr>
+    </tbody>
 </table>

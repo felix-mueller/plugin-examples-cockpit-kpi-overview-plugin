@@ -20,10 +20,13 @@ define(['angular', 'moment', './kpi-process-overview'], function(angular, moment
     'use strict';
     var KPIOverviewController = ['$scope', '$http', 'Uri', 'camAPI', function($scope, $http, Uri, camAPI) {
         $scope.typeFilters = CONST_BPMN_TYPES;
+        var selectActivity = function(abc) {
 
+        };
         // get the 'creation time date' of task
         var defaultParams = {
-            processInstanceId: $scope.processInstance.id
+            processInstanceId: $scope.processInstance.id,
+            sorting: [{sortBy: "occurrence", sortOrder: "asc"}]
         };
 
         //get start time for current process instance
@@ -35,7 +38,7 @@ define(['angular', 'moment', './kpi-process-overview'], function(angular, moment
             }
 
             angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('processDiagram', function(data) {
-                if (data.bpmnElements != null) {
+                if (data != null && data.bpmnElements != null) {
                     Object.keys(data.bpmnElements).forEach(function(key) {
                         var bpmnElement = data.bpmnElements[key];
                         if (bpmnElement.$type === 'bpmn:Process') {
@@ -60,8 +63,9 @@ define(['angular', 'moment', './kpi-process-overview'], function(angular, moment
 
 
         $http.post(Uri.appUri(CONST_REST_URLS.historyActivityInstance), defaultParams).success(function(activityInstances) {
-
+        	var activityNames = [];
             var taskActivityInstances = activityInstances.filter(function(activityInstance) {
+            	activityNames.push(activityInstance.activityId);
                 if (CONST_TASK_TYPES.indexOf(activityInstance.activityType) > -1) {
                     return true;
                 } else {
@@ -71,7 +75,7 @@ define(['angular', 'moment', './kpi-process-overview'], function(angular, moment
 
             var tasks = [];
             angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('processDiagram', function(data) {
-                if (data.bpmnElements != null) {
+                if (data != null && data.bpmnElements != null) {
                     Object.keys(data.bpmnElements).forEach(function(key) {
                         var bpmnElement = data.bpmnElements[key];
                         //add the KPI data from processDefinition
@@ -85,7 +89,7 @@ define(['angular', 'moment', './kpi-process-overview'], function(angular, moment
                             taskActivityInstances.forEach(function(taskActivity) {
                                 if (taskActivity.activityId === bpmnElement.id) {
                                     bpmnElement.taskActivity = taskActivity;
-                                    bpmnElement.link = '#/process-instance/' + $scope.processInstance.id + '?detailsTab=kpi-overview&activityInstanceIds=' + bpmnElement.taskActivity.activityId;
+                                    bpmnElement.link = '#/process-instance/' + $scope.processInstance.id + '/history?detailsTab=kpi-overview&activityInstanceIds=' + bpmnElement.taskActivity.id;
 
                                     var startMoment = new moment(taskActivity.startTime);
                                     if (taskActivity.endTime) {
@@ -115,52 +119,111 @@ define(['angular', 'moment', './kpi-process-overview'], function(angular, moment
                         }
                     });
                     $scope.tasks = tasks;
+
                 }
             });
+           // animateProcessInstancePath(activityNames);
         });
 
+        function animateProcessInstancePath(activities) {
+           angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('viewer', function(viewer) {
+              if (viewer) {
+	        	  var overlays = viewer.get('overlays');
+	              var htmlElement = $('<div style="width:100%; height:100%;"></div>');
+	              var overlay = overlays.add(activities[0], {
+	                  position: {
+	                      top: 0,
+	                      left: 0
+	                  },
+	                  html: htmlElement
+	              });
+	              $(overlays.get(overlay).htmlContainer).css("border-radius","10px").css("border","3px solid #276e8c").css("height",viewer.get('canvas')._elementRegistry._elements[activities[0]].element.height).css("width",viewer.get('canvas')._elementRegistry._elements[activities[0]].element.width);
+	              //var addx = viewer.get('canvas')._elementRegistry._elements[activities[1]].element.x-viewer.get('canvas')._elementRegistry._elements[activities[0]].element.x;
+	              //var addy = viewer.get('canvas')._elementRegistry._elements[activities[1]].element.y-viewer.get('canvas')._elementRegistry._elements[activities[0]].element.y;
+	              animate(viewer, $(overlays.get(overlay).htmlContainer),activities,0);
+              }
+          });
+        };
+
+        function animate(viewer, container, activities, number) {
+
+        	var activityA = activities[number+1];
+        	var activityB = activities[number];
+        	number++;
+        	if ( activityA && activityB ) {
+
+
+        		var addx = viewer.get('canvas')._elementRegistry._elements[activityA].element.x-viewer.get('canvas')._elementRegistry._elements[activityB].element.x;
+	            var addy = viewer.get('canvas')._elementRegistry._elements[activityA].element.y-viewer.get('canvas')._elementRegistry._elements[activityB].element.y;
+	            /*
+	            if (viewer.get('canvas')._elementRegistry._elements[activityA].element.incoming && viewer.get('canvas')._elementRegistry._elements[activityA].element.incoming[0].waypoints) {
+
+	            	for (var i = 0; i+1 < viewer.get('canvas')._elementRegistry._elements[activityA].element.incoming[0].waypoints.length; i++) {
+	            		var startpoint = viewer.get('canvas')._elementRegistry._elements[activityA].element.incoming[0].waypoints[i];
+	            		var endpoint = viewer.get('canvas')._elementRegistry._elements[activityA].element.incoming[0].waypoints[i+1];
+	            		var lineaddx = endpoint.x-startpoint.x;
+	            		var lineaddy = endpoint.y-startpoint.y;
+
+	            		container.queue("steps", function() {
+	            			container.animate({
+	            				left:"+="+lineaddx,
+	            				top:"+="+lineaddy
+	            			 },5000
+	            			);
+	            		});
+	            	}
+
+	            	container.dequeue("steps");
+	            }
+	            */
+
+	        	container.animate({
+	           	 left: "+="+addx,
+	        	 top: "+="+addy,
+	        	 height: viewer.get('canvas')._elementRegistry._elements[activityA].element.height+"px",
+	        	 width: viewer.get('canvas')._elementRegistry._elements[activityA].element.width+"px"
+	          },5000, function() {
+	        	  if (number <= activities.length) {
+	        		  animate(viewer, container, activities, number);
+	        	  }
+	          });
+        	}
+        }
 
         function addOverlay(task) {
             angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('viewer', function(viewer) {
-                var overlays = viewer.get('overlays');
-                if (task.kpiData != null && task.kpiData.length > 0 && task.kpiData[0].kpi != null) {
-                    //var htmlElement = '<div style="min-height: 20px; padding: 3px; background: #70b8db; border-radius:10px; border: 1px solid black; color: black;">Target:' + task.kpiData[0].kpi + task.kpiData[0].kpiunit + '</div>';
-                    if (task.taskActivity != null && task.taskActivity.overdue) {
-                        var htmlElement = '<div style="width:20px; height:20px; line-height: 21px; text-align: center; border-radius: 10px; background: red; border: 1px solid black; color: black;"><span class="glyphicon glyphicon-exclamation-sign"></span></div>';
-                    } else if (task.taskActivity != null && !task.taskActivity.overdue) {
-                        var htmlElement = '<div style="width:20px; height:20px; line-height: 21px; text-align: center; border-radius: 10px; background: green; border: 1px solid black; color: black; "><span class="glyphicon glyphicon-ok"></span></div>';
+            	if (viewer) {
+	                var overlays = viewer.get('overlays');
+	                if (task.kpiData != null && task.kpiData.length > 0 && task.kpiData[0].kpi != null) {
+	                    if (task.taskActivity != null && task.taskActivity.overdue) {
+	                        var htmlElement = '<div style="width:25px; height:25px; font-size:20px; line-height: 21px; text-align: center; border-radius: 10px; color: #b5152b;"><span class="glyphicon glyphicon-exclamation-sign"></span></div>';
+	                    } else if (task.taskActivity != null && !task.taskActivity.overdue) {
+	                        var htmlElement = '<div style="width:25px; height:25px; font-size:20px; line-height: 21px; text-align: center; border-radius: 10px; color: green; "><span class="glyphicon glyphicon-ok-sign"></span></div>';
 
-                    } else {
-                        var htmlElement = '<div></div>';
-                    }
+	                    } else {
+	                        var htmlElement = '<div></div>';
+	                    }
 
-                    overlays.add(task.id, {
-                        position: {
-                            bottom: 10,
-                            right: 10
-                        },
-                        html: htmlElement
-                    });
-                }
-
-                if (task.restTask != null) {
-                    var durationhtmlElement = '<div style="min-height: 20px; padding: 3px; background: #70b8db; border-radius:10px; border: 1px solid red; color: black;">Current:' + task.taskActivity.durationInUnit + task.kpiData[0].kpiunit + '</div>';
-
-                    overlays.add(task.id, {
-                        position: {
-                            bottom: -20,
-                            right: 50
-                        },
-                        html: durationhtmlElement
-                    });
-                }
+	                    overlays.add(task.id, {
+	                        position: {
+	                            top: -10,
+	                            right: 8
+	                        },
+	                        show: {
+	                        	minZoom: 0,
+	                        	maxZoom: 50
+	                        },
+	                        html: htmlElement
+	                    });
+	                }
+            	}
             });
         }
 
     }];
 
     var Configuration = ['ViewsProvider', function(ViewsProvider) {
-        ViewsProvider.registerDefaultView('cockpit.processInstance.runtime.tab', {
+        ViewsProvider.registerDefaultView('cockpit.processInstance.history.tab', {
             id: 'kpi-overview',
             label: 'KPI Overview',
             url: 'plugin://kpi-overview-plugin/static/app/kpi-overview-table.html',

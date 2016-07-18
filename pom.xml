@@ -107,9 +107,12 @@
       <dependencies>
         <dependency>
           <groupId>org.camunda.bpm.webapp</groupId>
-          <artifactId>camunda-webapp-tomcat-standalone</artifactId>
+          <artifactId>camunda-webapp-ee-tomcat-standalone</artifactId>
           <version>${camunda.version}</version>
-          <type>war</type>
+	    	
+	    	<type>war</type>
+	    	<systemPath>/Users/felix/Downloads/camunda-webapp-ee-tomcat-standalone-7.5.3-ee.war</systemPath>
+          <scope>system</scope>
         </dependency>
         <dependency>
           <groupId>org.camunda.cockpit.kpi.overview</groupId>

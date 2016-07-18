@@ -1,107 +1,107 @@
 <table class="cam-table">
-  <thead>
-    <tr>
-      <th>Start</th>
-      <th>Target Duration</th>
-      <th>Current Duration</th>
-      <th>Process Overdue</th>
-      <th>Tasks Overdue</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>{{processInst.startTime}}</td>
-      <td>{{processInst.targetDuration}}</td>
-      <td>{{processInst.currentDuration}}</td>
-      <td>
-      	<span ng-if="processInst.overdue" class="glyphicon glyphicon-exclamation-sign" style="background-color:red; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span>
-        <span ng-if="!processInst.overdue" class="glyphicon glyphicon-ok" style="background-color:green; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span>
-      </td>
-      <td>-</td>
-    </tr>
-  </tbody>
+    <thead>
+        <tr>
+            <th>State</th>
+            <th>Start</th>
+            <th>Target Duration</th>
+            <th>Current Duration</th>
+            <th>Process Overdue</th>
+            <th>Tasks Overdue</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                <span tooltip="Task completed" ng-if="processInst.endTime" class="glyphicon glyphicon-ok-circle"></span>
+                <span tooltip="Task running" ng-if="!processInst.endTime" class="glyphicon glyphicon-adjust"></span>
+            </td>
+            <td>{{processInst.startTime}}</td>
+            <td>{{processInst.targetDuration}}</td>
+            <td>{{processInst.currentDuration}}</td>
+            <td>
+                <span ng-if="processInst.overdue" class="glyphicon glyphicon-exclamation-sign" style="color: red; text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>
+                <span ng-if="!processInst.overdue" class="glyphicon glyphicon-ok-sign" style="color:green; text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>
+            </td>
+            <td>-</td>
+        </tr>
+    </tbody>
 </table>
 
 <table class="cam-table">
-  <thead>
-    <tr>
-      <th>Done?</th>
-      <th><select class="form-control" ng-model="search.$type" value=""><option value="">All Types</option><option ng-repeat="filter in typeFilters" value="{{filter}}">{{filter}}</option></select></th>
-      <th>Task</th>
-      <th>KPI</th>
-      <th>Started</th>
-      <th>Finished</th>
-      <th>Duration</th>
-      <th>Overdue</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr ng-repeat="task in tasks | filter:search">
-      <td>
-        <span ng-if="task.taskActivity.endTime" class="glyphicon glyphicon-ok"></span>
-      </td>
-      <td>
-        {{task.$type}}
-      </td>
-      <td>
-        <a cam-select-activity-instance="task.taskActivity.activityId" ng-href="{{ task.link }}" ng-if="task.link"><b>{{ task.name }}</b> ({{ task.id }})</a>
-        <span ng-if="!task.link">
+    <thead>
+        <tr>
+            <th>State</th>
+            <th>
+                <select class="form-control" ng-model="search.$type" value="">
+                    <option value="">All Types</option>
+                    <option ng-repeat="filter in typeFilters" value="{{filter}}">{{filter}}</option>
+                </select>
+            </th>
+            <th>Task</th>
+            <th>KPI</th>
+            <th>Started</th>
+            <th>Finished</th>
+            <th>Duration</th>
+            <th>Overdue</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="task in tasks | filter:search">
+            <td>
+                <span tooltip="Task completed" ng-if="task.taskActivity.endTime" class="glyphicon glyphicon-ok-circle"></span>
+                <span tooltip="Task running" ng-if="!task.taskActivity.endTime && task.taskActivity.startTime" class="glyphicon glyphicon-adjust"></span>
+            </td>
+            <td>
+                {{task.$type}}
+            </td>
+            <td>
+                <a ng-click="selectActivity(task.taskActivity.id)" ng-href="{{ task.link }}" ng-if="task.link"><b>{{ task.name }}</b> ({{ task.id }})</a>
+                <span ng-if="!task.link">
           <b>{{ task.name }}</b> ({{ task.id }})
         </span>
-      </td>
+            </td>
 
-      <td>
-        <p ng-repeat="kpiData in task.kpiData">
-          {{ kpiData.kpi }} {{ kpiData.kpiunit }}
-        </p>
-      </td>
-      <td>
-        <p>
-         {{ task.taskActivity.startTime  }}
-        </p>
-      </td>
-      <td>
-        <p>
-          {{ task.taskActivity.endTime }}
-        </p>
-      </td>
-      <td>
-        <p>
-          {{ task.taskActivity.duration }}
-        </p>
-      </td>
-      <td>
-        <p>
-        	<span ng-if="task.taskActivity.overdue" tooltip="Overdue for {{task.taskActivity.overdueTime}}" class="glyphicon glyphicon-exclamation-sign" style="background-color:red; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span>
-        	<span ng-if="!task.taskActivity.overdue && task.taskActivity.startTime" class="glyphicon glyphicon-ok" style="background-color:green; text-align: center; height:18px; width: 18px; border: 1px solid black; border-radius: 10px;"> </span>
-        
-        </p>
-      </td>
-    </tr>
+            <td>
+                <p ng-repeat="kpiData in task.kpiData">
+                    {{ kpiData.kpi }} {{ kpiData.kpiunit }}
+                </p>
+            </td>
+            <td>
+                <p>
+                    {{ task.taskActivity.startTime }}
+                </p>
+            </td>
+            <td>
+                <p>
+                    {{ task.taskActivity.endTime }}
+                </p>
+            </td>
+            <td>
+                <p>
+                    {{ task.taskActivity.duration }}
+                </p>
+            </td>
+            <td>
+                <p>
+                    <span ng-if="task.taskActivity.overdue" tooltip="Overdue for {{task.taskActivity.overdueTime}}" class="glyphicon glyphicon-exclamation-sign" style="color:#b5152b; text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>
+                    <span ng-if="!task.taskActivity.overdue && task.taskActivity.startTime" class="glyphicon glyphicon-ok-sign" style="color: green; text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>
+                </p>
+            </td>
+        </tr>
 
-    <tr ng-if="!tasks">
-      <td colspan="6">
-        <i class="icon-loading"></i> loading tasks...
-      </td>
-    </tr>
+        <tr ng-if="!tasks">
+            <td colspan="6">
+                <i class="icon-loading"></i> loading tasks...
+            </td>
+        </tr>
 
-    <tr ng-if="tasks && !tasks.length">
-      <td colspan="6">
-        No tasks
-      </td>
-    </tr>
+        <tr ng-if="tasks && !tasks.length">
+            <td colspan="6">
+                No tasks
+            </td>
+        </tr>
 
-  </tbody>
+    </tbody>
 </table>
 
-<pagination ng-if="pages.total > pages.size"
-  class="pagination-sm"
-
-  page="pages.current"
-  ng-model="pages.current"
-
-  total-items="pages.total"
-  items-per-page="pages.size"
-
-  max-size="7"
-  boundary-links="true"></pagination>
+<pagination ng-if="pages.total > pages.size" class="pagination-sm" page="pages.current" ng-model="pages.current" total-items="pages.total" items-per-page="pages.size" max-size="7" boundary-links="true"></pagination>

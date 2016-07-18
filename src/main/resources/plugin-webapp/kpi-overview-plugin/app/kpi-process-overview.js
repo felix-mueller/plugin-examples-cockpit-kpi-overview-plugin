@@ -8,7 +8,7 @@ define(['angular', 'moment'], function(angular, moment) {
             'userTask', 'scriptTask', 'serviceTask', 'sendTask', 'receiveTask', 'businessRuleTask'
         ];
         
-    var KPIProcessOverviewController = ['$scope', '$http', 'Uri', 'camAPI', function($scope, $http, Uri, camAPI) {
+    var KPIProcessOverviewController = ['$scope', 'filterFilter', '$http', 'Uri', 'camAPI', function($scope, filterFilter, $http, Uri, camAPI) {
         $scope.tasks = {};
         $scope.$watch('tasks', function(tasks) {
             Object.keys(tasks).forEach(function(key) {
@@ -24,6 +24,7 @@ define(['angular', 'moment'], function(angular, moment) {
             processInstances.forEach(function(instance, index) {
                 var tasksOverdue = 0;
                 var completedTasksOverdue = 0;
+                var tasksOverdueIds = [];
                 var startTimeMoment = new moment(instance.startTime);
                 if (instance.endTime) {
                     var endTimeMoment = new moment(instance.endTime);
@@ -31,10 +32,10 @@ define(['angular', 'moment'], function(angular, moment) {
                     var endTimeMoment = new moment();
                 }
 
-                processInstances[index].link = '#/process-instance/' + instance.id + '?detailsTab=kpi-overview';
+                processInstances[index].link = '#/process-instance/' + instance.id + '/history?detailsTab=kpi-overview';
 
                 angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('processDiagram', function(data) {
-                    if (data.bpmnElements != null) {
+                    if (data != null && data.bpmnElements != null) {
                         Object.keys(data.bpmnElements).forEach(function(key) {
                             var bpmnElement = data.bpmnElements[key];
                             if (bpmnElement.$type === 'bpmn:Process') {
@@ -76,7 +77,7 @@ define(['angular', 'moment'], function(angular, moment) {
 
 
                     angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('processDiagram', function(data) {
-                        if (data.bpmnElements != null) {
+                        if (data != null && data.bpmnElements != null) {
                             Object.keys(data.bpmnElements).forEach(function(key) {
                                 var bpmnElement = data.bpmnElements[key];
                                 //add the KPI data from processDefinition
@@ -108,6 +109,7 @@ define(['angular', 'moment'], function(angular, moment) {
                                                     completedTasksOverdue++;
                                                 } else {
                                                     tasksOverdue++;
+                                                    tasksOverdueIds.push(bpmnElement.id);
                                                     var tasks = $scope.tasks;
                                                     if (tasks[bpmnElement.id]) {
                                                         tasks[bpmnElement.id] = tasks[bpmnElement.id] + 1;
@@ -129,6 +131,7 @@ define(['angular', 'moment'], function(angular, moment) {
                                 }
                             });
 
+                            processInstances[index].tasksOverdueIds = tasksOverdueIds
                             processInstances[index].completedtasksoverdue = completedTasksOverdue;
                             processInstances[index].tasksoverdue = tasksOverdue;
                         }
@@ -136,7 +139,7 @@ define(['angular', 'moment'], function(angular, moment) {
                 });
 
                 $scope.processInstances = processInstances;
-
+                $scope.processInstancesOriginal = processInstances;
 
             });
 
@@ -153,26 +156,35 @@ define(['angular', 'moment'], function(angular, moment) {
         });
 
 
-
         function addOverlay(task, amount) {
             angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('viewer', function(viewer) {
                 var overlays = viewer.get('overlays');
-                var htmlElement = '<div style="width:20px; height:20px; line-height: 21px; text-align: center; border-radius: 10px; background: red; border: 1px solid black; color: black; "><span tooltip="Task overdue in ' + amount + ' instances">' + amount + '</span></div>';
-
+                var htmlElement = '<div style="width:20px; height:20px; line-height: 21px; text-align: center; border-radius: 10px; background: #b5152b; border: 1px solid black; color: black; " tooltip="Task overdue in ' + amount + ' instances"><span >' + amount + '</span></div>';
+                var $element = $(htmlElement);
+                $element.on('click', function (event) {
+                	console.log(event, task);
+                	$scope.processInstances = filterFilter($scope.processInstancesOriginal,{'tasksOverdueIds':task});
+                	$scope.$apply();
+                });
+                //angular.element(htmlElement).handler('click', function)
                 overlays.add(task, {
                     position: {
-                        bottom: 10,
+                        top: -10,
                         right: 10
                     },
-                    html: htmlElement
+                    show: {
+                    	minZoom: 0,
+                    	maxZoom: 50
+                    },
+                    html: $element
                 });
-
+                
             });
         }
     }];
 
     var Configuration = ['ViewsProvider', function(ViewsProvider) {
-        ViewsProvider.registerDefaultView('cockpit.processDefinition.runtime.tab', {
+        ViewsProvider.registerDefaultView('cockpit.processDefinition.history.tab', {
             id: 'kpi-overview-definition',
             label: 'KPI Overview ',
             url: 'plugin://kpi-overview-plugin/static/app/kpi-process-overview.html',
