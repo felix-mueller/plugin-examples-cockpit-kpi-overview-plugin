@@ -52,20 +52,39 @@ define(['angular', 'moment'], function(angular, moment) {
                         Object.keys(data.bpmnElements).forEach(function(key) {
                             var bpmnElement = data.bpmnElements[key];
                             if (bpmnElement.$type === 'bpmn:Process') {
-                                var kpiInformation = bpmnElement.$attrs['camunda:kpi'] + bpmnElement.$attrs['camunda:kpiunit'];
-                                processInstances[index].targetDuration = kpiInformation;
+                            	var extensionElements = bpmnElement.extensionElements;
+                            	var kpiInformation = {};
+                            	if (extensionElements && extensionElements.values && extensionElements.values.length>0) {
+                            		var camundaProperties = extensionElements.values.filter(function(extensionElementValue) {
+                            			if (extensionElementValue.$type === 'camunda:properties') {
+                            				if (extensionElementValue.$children && extensionElementValue.$children.length>0) {
+                            					extensionElementValue.$children.filter(function(extensionProperty) {
+                            						if (extensionProperty.name === 'kpi') {
+                            							kpiInformation['kpi'] = extensionProperty.value;
+                            						}
+                            						if (extensionProperty.name === 'kpiunit') {
+                            							kpiInformation['kpiunit'] = extensionProperty.value;
+                            						}
+                            					});
+                            				}
+                            				return true;
+                            			}
+                            		});
+                            	}
+                                var targetduration = kpiInformation.kpi + kpiInformation.kpiunit;
+                                processInstances[index].targetDuration = targetduration;
 
 
-                                processInstances[index].currentDuration = endTimeMoment.diff(startTimeMoment, bpmnElement.$attrs['camunda:kpiunit']);
-                                processInstances[index].currentDurationInUnit = processInstances[index].currentDuration + bpmnElement.$attrs['camunda:kpiunit'];
+                                processInstances[index].currentDuration = endTimeMoment.diff(startTimeMoment, kpiInformation.kpiunit);
+                                processInstances[index].currentDurationInUnit = processInstances[index].currentDuration + kpiInformation.kpiunit;
                                 durations+=processInstances[index].currentDuration;
-                                if (processInstances[index].currentDuration > parseInt(bpmnElement.$attrs['camunda:kpi'])) {
+                                if (processInstances[index].currentDuration > parseInt(kpiInformation.kpi)) {
                                     processInstances[index].overdue = true;
                                     processInstances[index].overdueInUnit = (parseInt(processInstances[index].currentDuration) - parseInt(processInstances[index].targetDuration)) + bpmnElement.$attrs['camunda:kpiunit'];
                                 } else {
                                     processInstances[index].overdue = false;
                                 }
-                                processInstances[index].unit = bpmnElement.$attrs['camunda:kpiunit'];
+                                processInstances[index].unit = kpiInformation.kpiunit;
                             }
                         });
                         if ($scope.processGeneral) {
@@ -77,8 +96,6 @@ define(['angular', 'moment'], function(angular, moment) {
                         }
                     }
                 });
-
-
 
                 //get tasks and check overdue for them
                 var defaultParams = {
