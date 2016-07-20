@@ -9,6 +9,19 @@ define(['angular', 'moment'], function(angular, moment) {
         ];
         
     var KPIProcessOverviewController = ['$scope', 'filterFilter', '$http', 'Uri', 'camAPI', function($scope, filterFilter, $http, Uri, camAPI) {
+    	var overlayIDs= [];
+    	 $scope.$on('$destroy', function iVeBeenDestroyed() {
+         	angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('viewer', function(viewer) {
+             	if (viewer) {
+ 	                var overlays = viewer.get('overlays');
+ 	                overlayIDs.forEach(function(id) {
+ 	                	overlays.remove(id);
+ 	                });
+             	}
+         	});
+         });
+    	
+    	
         $scope.tasks = {};
         $scope.$watch('tasks', function(tasks) {
             Object.keys(tasks).forEach(function(key) {
@@ -45,16 +58,23 @@ define(['angular', 'moment'], function(angular, moment) {
 
                                 processInstances[index].currentDuration = endTimeMoment.diff(startTimeMoment, bpmnElement.$attrs['camunda:kpiunit']);
                                 processInstances[index].currentDurationInUnit = processInstances[index].currentDuration + bpmnElement.$attrs['camunda:kpiunit'];
-
+                                durations+=processInstances[index].currentDuration;
                                 if (processInstances[index].currentDuration > parseInt(bpmnElement.$attrs['camunda:kpi'])) {
                                     processInstances[index].overdue = true;
                                     processInstances[index].overdueInUnit = (parseInt(processInstances[index].currentDuration) - parseInt(processInstances[index].targetDuration)) + bpmnElement.$attrs['camunda:kpiunit'];
-
                                 } else {
                                     processInstances[index].overdue = false;
                                 }
+                                processInstances[index].unit = bpmnElement.$attrs['camunda:kpiunit'];
                             }
                         });
+                        if ($scope.processGeneral) {
+                            $scope.processGeneral.avgDuration = (durations / processInstances.length);
+                        } else {
+                            $scope.processGeneral = {
+                                'avgDuration': (durations / processInstances.length)
+                            };
+                        }
                     }
                 });
 
@@ -101,7 +121,7 @@ define(['angular', 'moment'], function(angular, moment) {
                                             var diff = endMoment.diff(startMoment);
                                             var duration = moment.duration(diff).humanize();
                                             var durationInUnit = endMoment.diff(startMoment, bpmnElement.$attrs['camunda:kpiunit']);
-
+                                            
                                             bpmnElement.taskActivity.duration = duration;
                                             if (durationInUnit > parseInt(bpmnElement.$attrs['camunda:kpi'])) {
                                                 bpmnElement.taskActivity.overdue = true;
@@ -140,18 +160,8 @@ define(['angular', 'moment'], function(angular, moment) {
 
                 $scope.processInstances = processInstances;
                 $scope.processInstancesOriginal = processInstances;
-
+                
             });
-
-
-            if ($scope.processInst) {
-                $scope.processInst.avgDuration = (durations / processInstances.length);
-            } else {
-                $scope.processInst = {
-                    'avgDuration': (durations / processInstances.length)
-                };
-            }
-
 
         });
 
@@ -159,15 +169,14 @@ define(['angular', 'moment'], function(angular, moment) {
         function addOverlay(task, amount) {
             angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('viewer', function(viewer) {
                 var overlays = viewer.get('overlays');
-                var htmlElement = '<div style="width:20px; height:20px; line-height: 21px; text-align: center; border-radius: 10px; background: #b5152b; border: 1px solid black; color: black; " tooltip="Task overdue in ' + amount + ' instances"><span >' + amount + '</span></div>';
+                var htmlElement = '<div style="width:24px; height:20px; font-weight: bold; line-height: 18px; text-align: center; border-radius: 10px; background: #b5152b; border: 1px solid black; color: white; " tooltip="Task overdue in ' + amount + ' instances"><span >' + amount + '</span></div>';
                 var $element = $(htmlElement);
                 $element.on('click', function (event) {
-                	console.log(event, task);
                 	$scope.processInstances = filterFilter($scope.processInstancesOriginal,{'tasksOverdueIds':task});
                 	$scope.$apply();
                 });
                 //angular.element(htmlElement).handler('click', function)
-                overlays.add(task, {
+                var overlay = overlays.add(task, {
                     position: {
                         top: -10,
                         right: 10
@@ -178,8 +187,17 @@ define(['angular', 'moment'], function(angular, moment) {
                     },
                     html: $element
                 });
-                
+                overlayIDs.push(overlay);
             });
+        }
+        
+        $scope.getLink = function(id, taskId) {
+        	return '#/process-definition/' + $scope.processDefinition.id + '/history?detailsTab=kpi-overview-definition&activityIds=' + taskId;
+        };
+        $scope.getLinkInst = function(processInst) {
+        	var tasks = processInst.tasksOverdueIds.join(',');
+        	
+        	return '#/process-definition/' + $scope.processDefinition.id + '/history?detailsTab=kpi-overview-definition&activityIds=' + tasks;
         }
     }];
 

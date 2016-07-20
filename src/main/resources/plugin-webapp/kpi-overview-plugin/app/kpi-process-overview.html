@@ -1,6 +1,7 @@
 <table class="cam-table">
     <thead>
         <tr>
+        	<th>State</th>
             <th>Process
                 <br/>Instance</th>
             <th>Active
@@ -10,19 +11,24 @@
             <th>ID</th>
             <th>Start Time</th>
             <th>End Time</th>
-            <th>Target</th>
-            <th>Duration</th>
+            <th>Target Duration</th>
+            <th>Avg Duration</th>
+            <th>Actual Duration</th>
             <th>Active overdue tasks</th>
         </tr>
     </thead>
     <tbody>
         <tr ng-repeat="processInst in processInstances | filter:search">
             <td>
+                <span tooltip="Process instance completed" ng-if="processInst.endTime" class="glyphicon glyphicon-ok-circle"></span>
+                <span tooltip="Process instance running" ng-if="!processInst.endTime" class="glyphicon glyphicon-adjust"></span>
+            </td>
+            <td>
                 <span tooltip="Process overdue for {{processInst.overdueInUnit}}" ng-if="processInst.overdue" class="glyphicon glyphicon-exclamation-sign" style="color: #b5152b; line-height: 17px; text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>
                 <span tooltip="Process not overdue. Duration: {{processInst.currentDurationInUnit}}" ng-if="!processInst.overdue" class="glyphicon glyphicon-ok-sign" style="color: green; line-height: 17px; text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>
             </td>
             <td>
-                <span tooltip="{{processInst.tasksoverdue}} running task(s) overdue" ng-if="processInst.tasksoverdue > 0" class="glyphicon glyphicon-exclamation-sign" style="color: #b5152b; line-height: 17px;text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>
+                <a ng-href="{{getLinkInst(processInst)}}" tooltip="{{processInst.tasksoverdue}} running task(s) overdue" ng-if="processInst.tasksoverdue > 0" class="glyphicon glyphicon-exclamation-sign" style="color: #b5152b; line-height: 17px;text-align: center; height:18px; width: 18px; border-radius: 10px;"> </a>
                 <span tooltip="No running tasks overdue" ng-if="processInst.tasksoverdue == 0" class="glyphicon glyphicon-ok-sign" style="color: green; line-height: 17px; text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>
             </td>
             <td>
@@ -33,9 +39,12 @@
             <td>{{processInst.startTime}}</td>
             <td>{{processInst.endTime || '-'}}</td>
             <td>{{processInst.targetDuration}}</td>
+            <td>{{processGeneral.avgDuration}}{{processInst.unit}}</td>
             <td>{{processInst.currentDurationInUnit}}</td>
             <td>
-                <p ng-repeat="taskId in processInst.tasksOverdueIds">{{taskId}}</p>
+                <p ng-repeat="taskId in processInst.tasksOverdueIds">
+                	 <a ng-href="{{getLink(processInst.id,taskId)}}">{{taskId}}</a>
+               	</p>
             </td>
         </tr>
     </tbody>

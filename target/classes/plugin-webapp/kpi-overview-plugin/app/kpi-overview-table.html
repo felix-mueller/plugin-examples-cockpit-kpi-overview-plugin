@@ -46,7 +46,7 @@
         </tr>
     </thead>
     <tbody>
-        <tr ng-repeat="task in tasks | filter:search">
+        <tr ng-repeat="task in tasks | filter:search | orderBy:['taskActivity.startTime','-taskActivity.endTime']">
             <td>
                 <span tooltip="Task completed" ng-if="task.taskActivity.endTime" class="glyphicon glyphicon-ok-circle"></span>
                 <span tooltip="Task running" ng-if="!task.taskActivity.endTime && task.taskActivity.startTime" class="glyphicon glyphicon-adjust"></span>

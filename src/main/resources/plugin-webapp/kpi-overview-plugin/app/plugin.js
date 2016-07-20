@@ -19,10 +19,21 @@ var CONST_REST_URLS = {
 define(['angular', 'moment', './kpi-process-overview'], function(angular, moment, kpiprocessoverview) {
     'use strict';
     var KPIOverviewController = ['$scope', '$http', 'Uri', 'camAPI', function($scope, $http, Uri, camAPI) {
+    	var overlayIDs= [];
+    	
         $scope.typeFilters = CONST_BPMN_TYPES;
-        var selectActivity = function(abc) {
-
-        };
+        
+        $scope.$on('$destroy', function iVeBeenDestroyed() {
+        	angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('viewer', function(viewer) {
+            	if (viewer) {
+	                var overlays = viewer.get('overlays');
+	                overlayIDs.forEach(function(id) {
+	                	overlays.remove(id);
+	                });
+            	}
+        	});
+        });
+        
         // get the 'creation time date' of task
         var defaultParams = {
             processInstanceId: $scope.processInstance.id,
@@ -122,7 +133,8 @@ define(['angular', 'moment', './kpi-process-overview'], function(angular, moment
 
                 }
             });
-           // animateProcessInstancePath(activityNames);
+          //  animateProcessInstancePath(activityNames);
+
         });
 
         function animateProcessInstancePath(activities) {
@@ -135,26 +147,86 @@ define(['angular', 'moment', './kpi-process-overview'], function(angular, moment
 	                      top: 0,
 	                      left: 0
 	                  },
-	                  html: htmlElement
+	                  html: htmlElement,
+	                  show: {
+	                    	minZoom: 0,
+	                    	maxZoom: 50
+	                    }
 	              });
+	              overlayIDs.push(overlay);
 	              $(overlays.get(overlay).htmlContainer).css("border-radius","10px").css("border","3px solid #276e8c").css("height",viewer.get('canvas')._elementRegistry._elements[activities[0]].element.height).css("width",viewer.get('canvas')._elementRegistry._elements[activities[0]].element.width);
 	              //var addx = viewer.get('canvas')._elementRegistry._elements[activities[1]].element.x-viewer.get('canvas')._elementRegistry._elements[activities[0]].element.x;
 	              //var addy = viewer.get('canvas')._elementRegistry._elements[activities[1]].element.y-viewer.get('canvas')._elementRegistry._elements[activities[0]].element.y;
-	              animate(viewer, $(overlays.get(overlay).htmlContainer),activities,0);
+	              animate(viewer, $(overlays.get(overlay).htmlContainer),activities,0,overlay);
               }
           });
         };
 
-        function animate(viewer, container, activities, number) {
+        function animate(viewer, container, activities, number, overlay) {
 
         	var activityA = activities[number+1];
         	var activityB = activities[number];
         	number++;
         	if ( activityA && activityB ) {
 
+        		var a = viewer.get('canvas')._elementRegistry._elements[activityA].element;
+        		var b = viewer.get('canvas')._elementRegistry._elements[activityB].element;
 
-        		var addx = viewer.get('canvas')._elementRegistry._elements[activityA].element.x-viewer.get('canvas')._elementRegistry._elements[activityB].element.x;
-	            var addy = viewer.get('canvas')._elementRegistry._elements[activityA].element.y-viewer.get('canvas')._elementRegistry._elements[activityB].element.y;
+	            if (b.type==='bpmn:ParallelGateway' && b.outgoing.length>1) {
+	            
+	            	var overlays = viewer.get('overlays');
+	            	overlays.remove(overlay)
+	            	b.outgoing.forEach(function(outgoing) {
+	            		var realElement = Object.keys(viewer.get('canvas')._elementRegistry._elements).filter(function(item) {
+	            			if (viewer.get('canvas')._elementRegistry._elements[item].element.incoming.contains(outgoing)) {
+	            				return true;
+	            			}
+	            		});
+	            		var htmlElement = $('<div style="width:100%; height:100%;"></div>');
+	            		console.log(realElement);
+			              var overlay = overlays.add(b.id, {
+			                  position: {
+			                      top: 0,
+			                      left: 0
+			                  },
+			                  html: htmlElement,
+			                  show: {
+			                    	minZoom: 0,
+			                    	maxZoom: 50
+			                    }
+			              });
+			              overlayIDs.push(overlay);
+			              var a = viewer.get('canvas')._elementRegistry._elements[realElement[0]].element;
+			              var addx = a.x-b.x;
+				            var addy = a.y-b.y;
+				          $(overlays.get(overlay).htmlContainer).css("border-radius","10px").css("border","3px solid #276e8c").css("height",viewer.get('canvas')._elementRegistry._elements[activities[0]].element.height).css("width",viewer.get('canvas')._elementRegistry._elements[activities[0]].element.width);
+				             
+				          $(overlays.get(overlay).htmlContainer).animate({
+			   	           	 left: "+="+addx,
+			   	        	 top: "+="+addy,
+			   	        	 height:a.height+"px",
+			   	        	 width:a.width+"px"
+			   	          },2000, function() {
+			   	        	  if (number <= activities.length) {
+			   	        		  animate(viewer, container, activities, number);
+			   	        	  }
+			   	          });
+	            	});
+		              
+	            } else {
+	        		var addx = a.x-b.x;
+		            var addy = a.y-b.y;
+	            	container.animate({
+	   	           	 left: "+="+addx,
+	   	        	 top: "+="+addy,
+	   	        	 height: viewer.get('canvas')._elementRegistry._elements[activityA].element.height+"px",
+	   	        	 width: viewer.get('canvas')._elementRegistry._elements[activityA].element.width+"px"
+	   	          },2000, function() {
+	   	        	  if (number <= activities.length) {
+	   	        		  animate(viewer, container, activities, number, overlay);
+	   	        	  }
+	   	          });
+	            }
 	            /*
 	            if (viewer.get('canvas')._elementRegistry._elements[activityA].element.incoming && viewer.get('canvas')._elementRegistry._elements[activityA].element.incoming[0].waypoints) {
 
@@ -177,16 +249,7 @@ define(['angular', 'moment', './kpi-process-overview'], function(angular, moment
 	            }
 	            */
 
-	        	container.animate({
-	           	 left: "+="+addx,
-	        	 top: "+="+addy,
-	        	 height: viewer.get('canvas')._elementRegistry._elements[activityA].element.height+"px",
-	        	 width: viewer.get('canvas')._elementRegistry._elements[activityA].element.width+"px"
-	          },5000, function() {
-	        	  if (number <= activities.length) {
-	        		  animate(viewer, container, activities, number);
-	        	  }
-	          });
+	        	
         	}
         }
 
@@ -204,7 +267,7 @@ define(['angular', 'moment', './kpi-process-overview'], function(angular, moment
 	                        var htmlElement = '<div></div>';
 	                    }
 
-	                    overlays.add(task.id, {
+	                    var overlay = overlays.add(task.id, {
 	                        position: {
 	                            top: -10,
 	                            right: 8
@@ -215,6 +278,7 @@ define(['angular', 'moment', './kpi-process-overview'], function(angular, moment
 	                        },
 	                        html: htmlElement
 	                    });
+	                    overlayIDs.push(overlay);
 	                }
             	}
             });
@@ -231,8 +295,9 @@ define(['angular', 'moment', './kpi-process-overview'], function(angular, moment
             controller: KPIOverviewController,
             priority: 15
         });
-    }];
-
+    }];  
+    
+    
     var ngModule = angular.module('cockpit.plugin.kpi-overview-plugin', ['cockpit.plugin.kpi-process-overview-plugin']);
     ngModule.config(Configuration);
 
