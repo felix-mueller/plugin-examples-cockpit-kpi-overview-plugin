@@ -26,7 +26,6 @@
         </tr>
     </tbody>
 </table>
-
 <table class="cam-table">
     <thead>
         <tr>
@@ -37,7 +36,7 @@
                     <option ng-repeat="filter in typeFilters" value="{{filter}}">{{filter}}</option>
                 </select>
             </th>
-            <th>Task</th>
+            <th>Activity</th>
             <th>KPI</th>
             <th>Started</th>
             <th>Finished</th>
@@ -62,8 +61,8 @@
             </td>
 
             <td>
-                <p ng-repeat="kpiData in task.kpiData">
-                    {{ kpiData.kpi }} {{ kpiData.kpiunit }}
+                <p>
+                    {{ task.kpiData.kpi }} {{ task.kpiData.kpiunit }}
                 </p>
             </td>
             <td>
@@ -80,7 +79,7 @@
                 <p>
                     {{ task.taskActivity.duration }}
                 </p>
-            </td>
+            </td>"src/main/resources/process.bpmn"
             <td>
                 <p>
                     <span ng-if="task.taskActivity.overdue" tooltip="Overdue for {{task.taskActivity.overdueTime}}" class="glyphicon glyphicon-exclamation-sign" style="color:#b5152b; text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>

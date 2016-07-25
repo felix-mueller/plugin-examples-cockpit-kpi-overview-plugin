@@ -1,15 +1,8 @@
-define(['angular', 'moment'], function(angular, moment) {
-    'use strict';
-    var CONST_REST_URLS = {
-            'historyActivityInstance': 'engine://engine/:engine/history/activity-instance',
-            'historyProcessInstance': 'engine://engine/:engine/history/process-instance/'
-        },
-        CONST_TASK_TYPES = [
-            'userTask', 'scriptTask', 'serviceTask', 'sendTask', 'receiveTask', 'businessRuleTask'
-        ];
-        
-    var KPIProcessOverviewController = ['$scope', 'filterFilter', '$http', 'Uri', 'camAPI', function($scope, filterFilter, $http, Uri, camAPI) {
-    	var overlayIDs= [];
+ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
+	module.controller('kpiProcessController', ['$scope', 'filterFilter', '$http', 'Uri', 'camAPI', 'constants', 'kpiExtractor', function ($scope, filterFilter, $http, Uri, camAPI, constants, kpiExtractor) {
+    	var overlayIDs = [];
+    	
+    	//clean diagram on destroy
     	 $scope.$on('$destroy', function iVeBeenDestroyed() {
          	angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('viewer', function(viewer) {
              	if (viewer) {
@@ -29,7 +22,7 @@ define(['angular', 'moment'], function(angular, moment) {
             });
         }, true);
         //get history for this process to calculate average duration
-        $http.get(Uri.appUri(CONST_REST_URLS.historyProcessInstance), {
+        $http.get(Uri.appUri(constants.CONST_REST_URLS.historyProcessInstance), {
             'processDefinitionId': $scope.processDefinition.id
         }).success(function(processInstances) {
             var durations = 0;
@@ -53,31 +46,14 @@ define(['angular', 'moment'], function(angular, moment) {
                             var bpmnElement = data.bpmnElements[key];
                             if (bpmnElement.$type === 'bpmn:Process') {
                             	var extensionElements = bpmnElement.extensionElements;
-                            	var kpiInformation = {};
-                            	if (extensionElements && extensionElements.values && extensionElements.values.length>0) {
-                            		var camundaProperties = extensionElements.values.filter(function(extensionElementValue) {
-                            			if (extensionElementValue.$type === 'camunda:properties') {
-                            				if (extensionElementValue.$children && extensionElementValue.$children.length>0) {
-                            					extensionElementValue.$children.filter(function(extensionProperty) {
-                            						if (extensionProperty.name === 'kpi') {
-                            							kpiInformation['kpi'] = extensionProperty.value;
-                            						}
-                            						if (extensionProperty.name === 'kpiunit') {
-                            							kpiInformation['kpiunit'] = extensionProperty.value;
-                            						}
-                            					});
-                            				}
-                            				return true;
-                            			}
-                            		});
-                            	}
+                            	var kpiInformation = kpiExtractor.extract(extensionElements);
+                            	
                                 var targetduration = kpiInformation.kpi + kpiInformation.kpiunit;
                                 processInstances[index].targetDuration = targetduration;
-
-
                                 processInstances[index].currentDuration = endTimeMoment.diff(startTimeMoment, kpiInformation.kpiunit);
                                 processInstances[index].currentDurationInUnit = processInstances[index].currentDuration + kpiInformation.kpiunit;
                                 durations+=processInstances[index].currentDuration;
+                                
                                 if (processInstances[index].currentDuration > parseInt(kpiInformation.kpi)) {
                                     processInstances[index].overdue = true;
                                     processInstances[index].overdueInUnit = (parseInt(processInstances[index].currentDuration) - parseInt(processInstances[index].targetDuration)) + bpmnElement.$attrs['camunda:kpiunit'];
@@ -102,10 +78,10 @@ define(['angular', 'moment'], function(angular, moment) {
                     processInstanceId: instance.id
                 };
 
-                $http.post(Uri.appUri(CONST_REST_URLS.historyActivityInstance), defaultParams).success(function(activityInstances) {
+                $http.post(Uri.appUri(constants.CONST_REST_URLS.historyActivityInstance), defaultParams).success(function(activityInstances) {
 
                     var taskActivityInstances = activityInstances.filter(function(activityInstance) {
-                        if (CONST_TASK_TYPES.indexOf(activityInstance.activityType) > -1) {
+                        if (constants.CONST_TASK_TYPES.indexOf(activityInstance.activityType) > -1) {
                             return true;
                         } else {
                             return false;
@@ -118,13 +94,9 @@ define(['angular', 'moment'], function(angular, moment) {
                             Object.keys(data.bpmnElements).forEach(function(key) {
                                 var bpmnElement = data.bpmnElements[key];
                                 //add the KPI data from processDefinition
-                                bpmnElement.kpiData = [];
-                                bpmnElement.kpiData.push({
-                                    'kpi': bpmnElement.$attrs['camunda:kpi'],
-                                    'kpiunit': bpmnElement.$attrs['camunda:kpiunit']
-                                });
+                                bpmnElement.kpiData = kpiExtractor.extract(bpmnElement.extensionElements);
 
-                                if (CONST_BPMN_TYPES.indexOf(bpmnElement.$type) > -1) {
+                                if (constants.CONST_BPMN_TYPES.indexOf(bpmnElement.$type) > -1) {
                                     taskActivityInstances.forEach(function(taskActivity) {
                                         if (taskActivity.activityId === bpmnElement.id) {
                                             bpmnElement.taskActivity = taskActivity;
@@ -137,10 +109,10 @@ define(['angular', 'moment'], function(angular, moment) {
                                             }
                                             var diff = endMoment.diff(startMoment);
                                             var duration = moment.duration(diff).humanize();
-                                            var durationInUnit = endMoment.diff(startMoment, bpmnElement.$attrs['camunda:kpiunit']);
+                                            var durationInUnit = endMoment.diff(startMoment, kpiData.kpi);
                                             
                                             bpmnElement.taskActivity.duration = duration;
-                                            if (durationInUnit > parseInt(bpmnElement.$attrs['camunda:kpi'])) {
+                                            if (durationInUnit > parseInt(kpiData.kpi)) {
                                                 bpmnElement.taskActivity.overdue = true;
                                                 if (taskActivity.endTime) {
                                                     completedTasksOverdue++;
@@ -192,7 +164,7 @@ define(['angular', 'moment'], function(angular, moment) {
                 	$scope.processInstances = filterFilter($scope.processInstancesOriginal,{'tasksOverdueIds':task});
                 	$scope.$apply();
                 });
-                //angular.element(htmlElement).handler('click', function)
+                
                 var overlay = overlays.add(task, {
                     position: {
                         top: -10,
@@ -216,21 +188,6 @@ define(['angular', 'moment'], function(angular, moment) {
         	
         	return '#/process-definition/' + $scope.processDefinition.id + '/history?detailsTab=kpi-overview-definition&activityIds=' + tasks;
         }
-    }];
-
-    var Configuration = ['ViewsProvider', function(ViewsProvider) {
-        ViewsProvider.registerDefaultView('cockpit.processDefinition.history.tab', {
-            id: 'kpi-overview-definition',
-            label: 'KPI Overview ',
-            url: 'plugin://kpi-overview-plugin/static/app/kpi-process-overview.html',
-            dashboardMenuLabel: 'KPI Overview',
-            controller: KPIProcessOverviewController
-        });
-    }];
-
-
-    var ngModule = angular.module('cockpit.plugin.kpi-process-overview-plugin', []);
-    ngModule.config(Configuration);
-
-    return ngModule;
-});
+       
+    }])
+   });   
