@@ -1,5 +1,9 @@
 # Cockpit KPI Overview Plugin
 
+## ToDos
+
+- Pagination (improve code for many instances)
+- 
 
 ## Related Concepts
 

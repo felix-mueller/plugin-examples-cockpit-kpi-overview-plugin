@@ -14,6 +14,11 @@ angular.module('cockpit.plugin.kpi-overview-plugin').constant('constants', {
     ],
     CONST_REST_URLS: {
         'historyActivityInstance': 'engine://engine/:engine/history/activity-instance',
-        'historyProcessInstance': 'engine://engine/:engine/history/process-instance/'
-    }		
+        'historyProcessInstance': 'engine://engine/:engine/history/process-instance/',
+        'historyProcessInstanceCount': 'engine://engine/:engine/history/process-instance/count',
+    },
+    CONST_PLUGIN_PATH: {
+    	'CSS': '../../../api/cockpit/plugin/kpi-overview-plugin/static/app/assets/css/style.html'
+    },
+    QUERY_MAX_RESULTS: 50
 });

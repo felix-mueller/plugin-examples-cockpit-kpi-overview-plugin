@@ -115,18 +115,15 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
             });
         });
 
-      
-
         function addOverlay(task) {
             angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('viewer', function(viewer) {
             	if (viewer) {
 	                var overlays = viewer.get('overlays');
 	                if (task.kpiData != null && task.kpiData.kpi != null) {
 	                    if (task.taskActivity != null && task.taskActivity.overdue) {
-	                        var htmlElement = '<div style="width:25px; height:25px; font-size:20px; line-height: 21px; text-align: center; border-radius: 10px; color: #b5152b;"><span class="glyphicon glyphicon-exclamation-sign"></span></div>';
+	                        var htmlElement = '<div class="kpi-process-overlay-large kpi-process-overlay-red"><span class="glyphicon glyphicon-exclamation-sign"></span></div>';
 	                    } else if (task.taskActivity != null && !task.taskActivity.overdue) {
-	                        var htmlElement = '<div style="width:25px; height:25px; font-size:20px; line-height: 21px; text-align: center; border-radius: 10px; color: green; "><span class="glyphicon glyphicon-ok-sign"></span></div>';
-
+	                        var htmlElement = '<div class="kpi-process-overlay-large kpi-process-overlay-green"><span class="glyphicon glyphicon-ok-sign"></span></div>';
 	                    } else {
 	                        var htmlElement = '<div></div>';
 	                    }
