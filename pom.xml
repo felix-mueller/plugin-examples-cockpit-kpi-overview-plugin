@@ -112,6 +112,12 @@
 	    		<type>war</type>
         </dependency>
         <dependency>
+        	<groupId>org.camunda.bpm.distro</groupId>
+        	<artifactId>camunda-h2-webapp</artifactId>
+        	<version>7.5.0</version>
+        	<type>war</type>
+        </dependency>
+        <dependency>
           <groupId>org.camunda.cockpit.kpi.overview</groupId>
           <artifactId>testprocesstomcat</artifactId>
           <version>0.0.2-SNAPSHOT</version>

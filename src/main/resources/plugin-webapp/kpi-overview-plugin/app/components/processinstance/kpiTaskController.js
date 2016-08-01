@@ -1,7 +1,7 @@
 ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
 	module.controller('kpiTaskController', ['$scope', '$http', 'Uri', 'camAPI', 'constants', 'kpiExtractor', function($scope, $http, Uri, camAPI, constants, kpiExtractor) {
     	var overlayIDs= [];
-    	
+    	$scope.cssPath = constants.CONST_PLUGIN_PATH.CSS;
         $scope.typeFilters = constants.CONST_BPMN_TYPES;
         
         $scope.$on('$destroy', function iVeBeenDestroyed() {

@@ -1,2 +1,6 @@
+/Users/felix/Documents/workspace/cockpit-kpi-overview-plugin/src/main/java/org/camunda/bpm/cockpit/plugin/kpiOverview/StatisticData.java
 /Users/felix/Documents/workspace/cockpit-kpi-overview-plugin/src/main/java/org/camunda/bpm/cockpit/plugin/kpiOverview/KPIOverviewPlugin.java
+/Users/felix/Documents/workspace/cockpit-kpi-overview-plugin/src/main/java/org/camunda/bpm/cockpit/plugin/kpiOverview/resources/KPIStatisticsResource.java
+/Users/felix/Documents/workspace/cockpit-kpi-overview-plugin/src/main/java/org/camunda/bpm/cockpit/plugin/kpiOverview/dto/TaskStatisticHistoryDto.java
+/Users/felix/Documents/workspace/cockpit-kpi-overview-plugin/src/main/java/org/camunda/bpm/cockpit/plugin/kpiOverview/dto/TaskStatisticHistoryCountDto.java
 /Users/felix/Documents/workspace/cockpit-kpi-overview-plugin/src/main/java/org/camunda/bpm/cockpit/plugin/kpiOverview/resources/KPIOverviewPluginRootResource.java
