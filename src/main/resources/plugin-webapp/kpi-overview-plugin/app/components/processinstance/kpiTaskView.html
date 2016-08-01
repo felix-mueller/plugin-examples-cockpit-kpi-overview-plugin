@@ -4,27 +4,27 @@
     <thead>
         <tr>
             <th>State</th>
+            <th>Overdue State</th>
             <th>Start</th>
             <th>Target Duration</th>
             <th>Current Duration</th>
-            <th>Process Overdue</th>
-            <th>Tasks Overdue</th>
+            
         </tr>
     </thead>
     <tbody>
         <tr>
             <td>
-                <span tooltip="Task completed" ng-if="processInst.endTime" class="glyphicon glyphicon-ok-circle"></span>
-                <span tooltip="Task running" ng-if="!processInst.endTime" class="glyphicon glyphicon-adjust"></span>
+                <span tooltip="Process completed" ng-if="processInst.endTime" class="glyphicon glyphicon-ok-circle"></span>
+                <span tooltip="Process running" ng-if="!processInst.endTime" class="glyphicon glyphicon-adjust"></span>
             </td>
-            <td>{{processInst.startTime}}</td>
-            <td>{{processInst.targetDuration}}</td>
-            <td>{{processInst.currentDuration}}</td>
             <td>
                 <span ng-if="processInst.overdue" class="glyphicon glyphicon-exclamation-sign" style="color: red; text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>
                 <span ng-if="!processInst.overdue" class="glyphicon glyphicon-ok-sign" style="color:green; text-align: center; height:18px; width: 18px; border-radius: 10px;"> </span>
             </td>
-            <td>-</td>
+            <td>{{processInst.startTime}}</td>
+            <td>{{processInst.targetDuration}}</td>
+            <td>{{processInst.currentDuration}}</td>
+            
         </tr>
     </tbody>
 </table>

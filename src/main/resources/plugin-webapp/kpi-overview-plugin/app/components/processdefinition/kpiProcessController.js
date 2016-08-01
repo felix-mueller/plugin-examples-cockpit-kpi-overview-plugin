@@ -223,10 +223,10 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
                 var overlays = viewer.get('overlays');
                 var htmlElement = '<div class="kpi-process-overlay-info" tooltip="Task overdue in ' + amount + ' instances"><span >' + amount + '</span></div>';
                 var $element = $(htmlElement);
-                $element.on('click', function (event) {
+               /* $element.on('click', function (event) {
                 	$scope.processInstances = filterFilter($scope.processInstancesOriginal,{'tasksOverdueIds':task});
                 	$scope.$apply();
-                });
+                });*/
                 
                 var overlay = overlays.add(task, {
                     position: {

@@ -47,7 +47,7 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
                             
                             $scope.processInst.currentDuration = currentMoment.diff(creationMoment, kpiInformation.kpiunit) + kpiInformation.kpiunit;
 
-                            if ($scope.processInst.currentDuration > parseInt(kpiInformation.kpiunit)) {
+                            if (currentMoment.diff(creationMoment, kpiInformation.kpiunit) > parseInt(kpiInformation.kpi)) {
                                 $scope.processInst.overdue = true;
                             } else {
                                 $scope.processInst.overdue = false;
