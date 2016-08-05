@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.ws.rs.GET;
 
@@ -23,8 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class KPIStatisticsResource extends AbstractCockpitPluginResource {
 	private String statisticData;
 	private String processDefinitionId;
-	private final Logger LOGGER = Logger.getLogger(KPIStatisticsResource.class.getName());
-
+	
 	public KPIStatisticsResource(String engineName, String processDefinitionId, String statisticData) {
 		super(engineName);
 		this.processDefinitionId = processDefinitionId;

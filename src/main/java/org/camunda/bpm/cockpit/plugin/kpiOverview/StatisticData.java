@@ -21,6 +21,9 @@ public class StatisticData {
 		return kpiUnit;
 	}
 	public void setKpiUnit(String kpiUnit) {
+		if (kpiUnit.equals("h")) {
+			kpiUnit = "hh";
+		}
 		this.kpiUnit = kpiUnit;
 	}
 }

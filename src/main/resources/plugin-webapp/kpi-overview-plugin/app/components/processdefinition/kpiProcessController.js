@@ -102,23 +102,25 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
 	                    if (data != null && data.bpmnElements != null) {
 	                        Object.keys(data.bpmnElements).forEach(function(key) {
 	                            var bpmnElement = data.bpmnElements[key];
-	                            if (bpmnElement.$type === 'bpmn:Process') {
+	                            if (bpmnElement.$type === 'bpmn:Process' || bpmnElement.$type === 'bpmn:Collaboration') {
 	                            	var extensionElements = bpmnElement.extensionElements;
 	                            	var kpiInformation = kpiExtractor.extract(extensionElements);
 	                            	
-	                                var targetduration = kpiInformation.kpi + kpiInformation.kpiunit;
-	                                processInstances[index].targetDuration = targetduration;
-	                                processInstances[index].currentDuration = endTimeMoment.diff(startTimeMoment, kpiInformation.kpiunit);
-	                                processInstances[index].currentDurationInUnit = processInstances[index].currentDuration + kpiInformation.kpiunit;
-	                                durations+=processInstances[index].currentDuration;
-	                                
-	                                if (processInstances[index].currentDuration > parseInt(kpiInformation.kpi)) {
-	                                    processInstances[index].overdue = true;
-	                                    processInstances[index].overdueInUnit = (parseInt(processInstances[index].currentDuration) - parseInt(processInstances[index].targetDuration)) + bpmnElement.$attrs['camunda:kpiunit'];
-	                                } else {
-	                                    processInstances[index].overdue = false;
-	                                }
-	                                processInstances[index].unit = kpiInformation.kpiunit;
+	                            	if (kpiInformation != null && kpiInformation.kpi) {
+		                                var targetduration = kpiInformation.kpi + kpiInformation.kpiunit;
+		                                processInstances[index].targetDuration = targetduration;
+		                                processInstances[index].currentDuration = endTimeMoment.diff(startTimeMoment, kpiInformation.kpiunit);
+		                                processInstances[index].currentDurationInUnit = processInstances[index].currentDuration + kpiInformation.kpiunit;
+		                                durations+=processInstances[index].currentDuration;
+		                                
+		                                if (processInstances[index].currentDuration > parseInt(kpiInformation.kpi)) {
+		                                    processInstances[index].overdue = true;
+		                                    processInstances[index].overdueInUnit = (parseInt(processInstances[index].currentDuration) - parseInt(kpiInformation.kpi)) + kpiInformation.kpiunit;
+		                                } else {
+		                                    processInstances[index].overdue = false;
+		                                }
+		                                processInstances[index].unit = kpiInformation.kpiunit;
+	                            	}
 	                            }
 	                        });
 	                        if ($scope.processGeneral) {
@@ -171,7 +173,7 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
 	                                            var duration = moment.duration(diff).humanize();
 	                                            
 	                                            if (bpmnElement.kpiData) {
-		                                            var durationInUnit = endMoment.diff(startMoment, bpmnElement.kpiData.kpi);
+		                                            var durationInUnit = endMoment.diff(startMoment, bpmnElement.kpiData.kpiunit);
 		                                            
 		                                            bpmnElement.taskActivity.duration = duration;
 		                                            if (durationInUnit > parseInt(bpmnElement.kpiData.kpi)) {

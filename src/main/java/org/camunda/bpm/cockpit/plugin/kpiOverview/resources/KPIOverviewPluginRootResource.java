@@ -5,10 +5,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 
 import org.camunda.bpm.cockpit.plugin.kpiOverview.KPIOverviewPlugin;
-import org.camunda.bpm.cockpit.plugin.resource.AbstractPluginRootResource;
+import org.camunda.bpm.cockpit.plugin.resource.AbstractCockpitPluginRootResource;
 
 @Path("plugin/" + KPIOverviewPlugin.ID)
-public class KPIOverviewPluginRootResource extends AbstractPluginRootResource {
+public class KPIOverviewPluginRootResource extends AbstractCockpitPluginRootResource {
 
   public KPIOverviewPluginRootResource() {
     super(KPIOverviewPlugin.ID);

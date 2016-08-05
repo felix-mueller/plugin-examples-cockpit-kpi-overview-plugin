@@ -33,25 +33,30 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
                 if (data != null && data.bpmnElements != null) {
                     Object.keys(data.bpmnElements).forEach(function(key) {
                         var bpmnElement = data.bpmnElements[key];
-                        if (bpmnElement.$type === 'bpmn:Process') {
+                        if (bpmnElement.$type === 'bpmn:Process' || bpmnElement.$type === 'bpmn:Collaboration') {
                         	var extensionElements = bpmnElement.extensionElements;
                         	var kpiInformation = kpiExtractor.extract(extensionElements);
-                            $scope.processInst.targetDuration = kpiInformation.kpi+kpiInformation.kpiunit;
-
-                            var creationMoment = new moment($scope.processInst.startTime);
-                            var currentMoment = new moment();
                             
-                            if ($scope.processInst.endTime) {
-                            	currentMoment = new moment($scope.processInst.endTime);
-                            }
-                            
-                            $scope.processInst.currentDuration = currentMoment.diff(creationMoment, kpiInformation.kpiunit) + kpiInformation.kpiunit;
-
-                            if (currentMoment.diff(creationMoment, kpiInformation.kpiunit) > parseInt(kpiInformation.kpi)) {
-                                $scope.processInst.overdue = true;
-                            } else {
-                                $scope.processInst.overdue = false;
-                            }
+                        	if (kpiInformation != null && kpiInformation.kpi != null) {
+	                        	$scope.processInst.targetDuration = kpiInformation.kpi+kpiInformation.kpiunit;
+	
+	                            var creationMoment = new moment($scope.processInst.startTime);
+	                            var currentMoment = new moment();
+	                            
+	                            if ($scope.processInst.endTime) {
+	                            	currentMoment = new moment($scope.processInst.endTime);
+	                            }
+	                            
+	                            var duration = currentMoment.diff(creationMoment, kpiInformation.kpiunit);
+	                            $scope.processInst.currentDuration = duration + kpiInformation.kpiunit;
+	                            
+	                            if (duration > parseInt(kpiInformation.kpi)) {
+	                                $scope.processInst.overdue = true;
+	                                $scope.processInst.overdueDuration = (duration - parseInt(kpiInformation.kpi)) + kpiInformation.kpiunit;
+	                            } else {
+	                                $scope.processInst.overdue = false;
+	                            }
+                        	}
                         }
                     });
                 }
