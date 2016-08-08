@@ -19,7 +19,7 @@
             </td>
             <td>
                 <span ng-if="processInst.overdue" tooltip="Overdue for {{processInst.overdueDuration}}" class="glyphicon glyphicon-exclamation-sign" style="color: #b5152b;"> </span>
-                <span ng-if="!processInst.overdue" class="glyphicon glyphicon-ok-sign" style="color:green;"> </span>
+                <span ng-if="!processInst.overdue" tooltip="In time" class="glyphicon glyphicon-ok-sign" style="color:green;"> </span>
             </td>
             <td>{{processInst.targetDuration}}</td>
             <td>{{processInst.currentDuration}}</td>
@@ -49,60 +49,60 @@
         </tr>
     </thead>
     <tbody>
-        <tr ng-repeat="task in tasks | filter:search | orderBy:['taskActivity.startTime','-taskActivity.endTime']">
+        <tr ng-repeat="task in taskActivityInstances | filter:search | orderBy:['task.startTime','-task.endTime']">
             <td>
-                <a ng-click="selectActivity(task.taskActivity.id)" ng-href="{{ task.link }}" ng-if="task.link" tooltip="{{ task.id }}"><b>{{ task.name }}</b></a>
-                <span ng-if="!task.link" tooltip="{{ task.id }}">
-          <b>{{ task.name }}</b>
+                <a ng-click="selectActivity(task.id)" ng-href="{{ task.link }}" ng-if="task.link" tooltip="{{ task.bpmnElement.id }}"><b>{{ task.bpmnElement.name }}</b></a>
+                <span ng-if="!task.link" tooltip="{{ task.bpmnElement.id }}">
+          <b>{{ task.bpmnElement.name }}</b>
         </span>
             </td>
             <td>
-                <span tooltip="Task completed" ng-if="task.taskActivity.endTime" class="glyphicon glyphicon-ok-circle"></span>
-                <span tooltip="Task running" ng-if="!task.taskActivity.endTime && task.taskActivity.startTime" class="glyphicon glyphicon-adjust"></span>
+                <span tooltip="Activity completed" ng-if="task.endTime" class="glyphicon glyphicon-ok-circle"></span>
+                <span tooltip="Activity running" ng-if="!task.endTime && task.startTime" class="glyphicon glyphicon-adjust"></span>
             </td>
             <td>
                 <p>
-                    <span ng-if="task.taskActivity.overdue" tooltip="Overdue for {{task.taskActivity.overdueTime}}" class="glyphicon glyphicon-exclamation-sign" style="color:#b5152b;"> </span> <a href="#" ng-if="task.taskActivity.overdue && !task.taskActivity.endTime" tooltip="Send reminder email to task candiate group or assignee" class="glyphicon glyphicon-envelope"> </a>
-                    <span ng-if="!task.taskActivity.overdue && task.taskActivity.startTime" class="glyphicon glyphicon-ok-sign" style="color: green;"> </span>
+                    <span ng-if="task.overdue" tooltip="Overdue for {{task.overdueTime}}" class="glyphicon glyphicon-exclamation-sign" style="color:#b5152b;"> </span> <a href="#" ng-if="task.taskActivity.overdue && !task.taskActivity.endTime" tooltip="Send reminder email to task candiate group or assignee" class="glyphicon glyphicon-envelope"> </a>
+                    <span ng-if="!task.overdue && task.startTime" tooltip="In time" class="glyphicon glyphicon-ok-sign" style="color: green;"> </span>
                 </p>
             </td>
             
             <td>
                 <p>
-                    {{ task.kpiData.kpi }} {{ task.kpiData.kpiunit }}
+                    {{ task.bpmnElement.kpiData.kpi }} {{ task.bpmnElement.kpiData.kpiunit }}
                 </p>
             </td>
 
             <td>
                 <p>
-                    {{ task.taskActivity.duration || '-'}}
+                    {{ task.duration || '-'}}
                 </p>
             </td>
               
             <td>
                 <p>
-                    {{ task.taskActivity.startTime || '-'}}
+                    {{ task.startTime || '-'}}
                 </p>
             </td>
             <td>
                 <p>
-                    {{ task.taskActivity.endTime || '-'}}
+                    {{ task.endTime || '-'}}
                 </p>
             </td>
           <td>
-                {{task.$type.replace('bpmn:','')}}
+                {{task.bpmnElement.$type.replace('bpmn:','')}}
             </td>
             
             
         </tr>
 
-        <tr ng-if="!tasks">
+        <tr ng-if="!taskActivityInstances">
             <td colspan="6">
                 <i class="icon-loading"></i> loading tasks...
             </td>
         </tr>
 
-        <tr ng-if="tasks && !tasks.length">
+        <tr ng-if="taskActivityInstances && !taskActivityInstances.length">
             <td colspan="6">
                 No tasks
             </td>

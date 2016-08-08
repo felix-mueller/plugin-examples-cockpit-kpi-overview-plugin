@@ -1,5 +1,5 @@
 ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
-	module.controller('kpiProcessController', ['$scope', 'filterFilter', '$http', 'Uri', 'camAPI', 'constants', 'kpiExtractor', function ($scope, filterFilter, $http, Uri, camAPI, constants, kpiExtractor) {
+	module.controller('kpiProcessController', ['$scope', 'filterFilter', '$compile', '$http', 'Uri', 'camAPI', 'constants', 'kpiExtractor', function ($scope, filterFilter, $compile, $http, Uri, camAPI, constants, kpiExtractor) {
     	var overlayIDs = [];
     	
     	//clean diagram on destroy
@@ -24,6 +24,7 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
         	}
         	updateView();
         });
+        basicStatistics();
         
         $scope.pages = {
         	current: 1,
@@ -39,7 +40,7 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
         	//get statistis for overlay
         	angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('processDiagram', function(data) {
         		var statisticQuery = [];
-        		console.log(data);
+
         		if (data != null && data.bpmnElements != null) {
                     Object.keys(data.bpmnElements).forEach(function(key) {
                     	var bpmnElement = data.bpmnElements[key];
@@ -55,7 +56,7 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
                     	}
                     });
         		}
-        		console.log(statisticQuery);
+
         		if (statisticQuery.length>0) {
         			$http.get(Uri.appUri(constants.CONST_REST_URLS.historyCustomStatistic),{
             			params: {
@@ -64,7 +65,7 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
             			}
             		}).success(function(statistic) {
             			statistic.forEach(function(statistic) {
-            				if (statistic.count != 0) {
+            				if (statistic.count != null) {
             					addOverlay(statistic.activityId, statistic.count);
             				}
                         });
@@ -83,8 +84,6 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
 	                'sortOrder': 'desc'
 	            }
 	        }).success(function(processInstances) {
-	            var durations = 0;
-	
 	            processInstances.forEach(function(instance, index) {
 	                var tasksOverdue = 0;
 	                var completedTasksOverdue = 0;
@@ -111,7 +110,6 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
 		                                processInstances[index].targetDuration = targetduration;
 		                                processInstances[index].currentDuration = endTimeMoment.diff(startTimeMoment, kpiInformation.kpiunit);
 		                                processInstances[index].currentDurationInUnit = processInstances[index].currentDuration + kpiInformation.kpiunit;
-		                                durations+=processInstances[index].currentDuration;
 		                                
 		                                if (processInstances[index].currentDuration > parseInt(kpiInformation.kpi)) {
 		                                    processInstances[index].overdue = true;
@@ -120,20 +118,19 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
 		                                    processInstances[index].overdue = false;
 		                                }
 		                                processInstances[index].unit = kpiInformation.kpiunit;
+		                                if ($scope.processGeneral == null) {
+		                                	$scope.processGeneral = {
+		                                		unit: kpiInformation.kpiunit
+		                                	};
+		                                }
 	                            	}
 	                            }
 	                        });
-	                        if ($scope.processGeneral) {
-	                            $scope.processGeneral.avgDuration = (durations / processInstances.length);
-	                        } else {
-	                            $scope.processGeneral = {
-	                                'avgDuration': (durations / processInstances.length)
-	                            };
-	                        }
 	                    }
 	                });
 	                
 	                
+                    
 	
 	                //get tasks and check overdue for them
 	                var defaultParams = {
@@ -199,9 +196,6 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
 	                                            return true;
 	                                        }
 	                                    });
-	
-	
-	
 	                                }
 	                            });
 	
@@ -218,18 +212,44 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
 	            });
 	
 	        });
-        }
+        };
+        
+        function basicStatistics() {
+        	$scope.$watch('processGeneral.unit', function(unit) {
+	        	if (unit != null) {
+		        	$http.get(Uri.appUri(constants.CONST_REST_URLS.historyDurationReport),{
+		            	params: {
+		            		'processDefinitionIdIn':$scope.processDefinition.id,
+		            		'reportType': 'duration',
+		            		'periodUnit': 'quarter'
+		            	}
+		            }).success(function(result) {
+		            	var durations = 0;
+		            	result.forEach(function(quarter) {
+		            		durations+=quarter.average;
+		            	});
+		            	var avgDuration = durations / result.length;
+		            	avgDuration = Math.round(moment.duration(avgDuration).as(unit) * 100) / 100;
+		            	if ($scope.processGeneral) {
+		                    $scope.processGeneral.avgDuration = avgDuration;
+		                } else {
+		                    $scope.processGeneral = {
+		                        'avgDuration': avgDuration
+		                    };
+		                }
+		            });
+	        	}
+		    });
+        };
 
         function addOverlay(task, amount) {
             angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('viewer', function(viewer) {
                 var overlays = viewer.get('overlays');
-                var htmlElement = '<div class="kpi-process-overlay-info" tooltip="Task overdue in ' + amount + ' instances"><span >' + amount + '</span></div>';
+                var htmlElement = angular.element('<div class="kpi-process-overlay-info" tooltip-animation="false" tooltip-placement="top" tooltip="' + amount + ' running Activity Instances overdue"><span>' + amount + '</span></div>');
                 var $element = $(htmlElement);
-               /* $element.on('click', function (event) {
-                	$scope.processInstances = filterFilter($scope.processInstancesOriginal,{'tasksOverdueIds':task});
-                	$scope.$apply();
-                });*/
-                
+                if (amount === 0) {
+                	$element.css('background-color','green');
+                }
                 var overlay = overlays.add(task, {
                     position: {
                         top: -10,
@@ -241,7 +261,9 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
                     },
                     html: $element
                 });
+                $compile($element[0])($scope);
                 overlayIDs.push(overlay);
+                //$element.tooltip();
             });
         }
         
@@ -250,9 +272,7 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
         };
         $scope.getLinkInst = function(processInst) {
         	var tasks = processInst.tasksOverdueIds.join(',');
-        	
         	return '#/process-definition/' + $scope.processDefinition.id + '/history?detailsTab=kpi-overview-definition&activityIds=' + tasks;
         }
-       
     }])
    });   

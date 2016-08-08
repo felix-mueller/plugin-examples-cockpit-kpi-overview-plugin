@@ -40,7 +40,7 @@
             <td>{{processInst.startTime}}</td>
             <td>{{processInst.endTime || '-'}}</td>
             <td>{{processInst.targetDuration}}</td>
-            <td>{{processGeneral.avgDuration}}{{processInst.unit}}</td>
+            <td><span tooltip="calculated based on finished process instances">{{processGeneral.avgDuration}}{{processInst.unit}}</span></td>
             <td>{{processInst.currentDurationInUnit}}</td>
             <td>
                 <p ng-repeat="taskId in processInst.tasksOverdueIds">

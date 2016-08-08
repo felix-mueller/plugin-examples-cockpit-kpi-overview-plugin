@@ -28,9 +28,9 @@
       <groupId>org.camunda.bpm.webapp</groupId>
       <artifactId>camunda-webapp</artifactId>
       <classifier>classes</classifier>
-      <version>${camunda.version}</version>
+      <version>7.5.3-ee</version>
     </dependency>
-
+	
     <!-- provides jax-rs (among other APIs) -->
     <dependency>
       <groupId>org.jboss.spec</groupId>
@@ -39,12 +39,13 @@
       <scope>provided</scope>
       <version>3.0.2.Final</version>
     </dependency>
+    
 
     <!-- test dependencies -->
     <dependency>
       <groupId>org.camunda.bpm</groupId>
       <artifactId>camunda-engine</artifactId>
-      <version>${camunda.version}</version>
+      <version>7.5.3-ee</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -69,38 +70,6 @@
     </repository>
   </repositories>
   
-  <build>
-  <plugins>
-  <plugin>
-    <artifactId>maven-antrun-plugin</artifactId>
-    <version>1.6</version>
-    <executions>
-        <execution>
-            <phase>package</phase>
-            <configuration>
-                <target>
-                    <copy file="target/cockpit-kpi-overview-plugin-1.0-SNAPSHOT.jar"
-                        tofile="/Users/felix/Downloads/camunda-bpm-tomcat-7.5.0/server/apache-tomcat-8.0.24/webapps/camunda/WEB-INF/lib/cockpit-kpi-overview-plugin-1.0-SNAPSHOT.jar" />
-                	<exec
-                  		dir="/Users/felix/Downloads/camunda-bpm-tomcat-7.5.0/server/apache-tomcat-8.0.24/bin"
-                  		executable="./shutdown.sh"
-                  		failonerror="true"/>
-                  	<exec
-                  		dir="/Users/felix/Downloads/camunda-bpm-tomcat-7.5.0/server/apache-tomcat-8.0.24/bin"
-                  		executable="./startup.sh"
-                  		failonerror="true"/>
-                </target>
-            </configuration>
-            <goals>
-                <goal>run</goal>
-            </goals>
-        </execution>
-    </executions>
-	</plugin>
-	</plugins>
-  </build>
-  
-  
    <profiles>
     <profile>
       <id>develop</id>
@@ -108,14 +77,8 @@
         <dependency>
           <groupId>org.camunda.bpm.webapp</groupId>
           <artifactId>camunda-webapp-ee-tomcat-standalone</artifactId>
-          <version>7.5.0-ee</version>
+          <version>7.5.3-ee</version>
 	    		<type>war</type>
-        </dependency>
-        <dependency>
-        	<groupId>org.camunda.bpm.distro</groupId>
-        	<artifactId>camunda-h2-webapp</artifactId>
-        	<version>7.5.0</version>
-        	<type>war</type>
         </dependency>
         <dependency>
           <groupId>org.camunda.cockpit.kpi.overview</groupId>
@@ -123,6 +86,12 @@
           <version>0.0.2-SNAPSHOT</version>
           <type>war</type>
         </dependency>
+        <dependency>
+	      <groupId>org.camunda.bpm</groupId>
+	      <artifactId>camunda-engine-rest</artifactId>
+	      <version>7.5.3-ee</version>
+	      <type>war</type>
+	    </dependency>
       </dependencies>
       <build>
         <resources>
@@ -148,8 +117,9 @@
                 </resourceBases>
               </webAppConfig>
             </configuration>
+            
           </plugin>
-        </plugins>
+         </plugins>
       </build>
     </profile>
   </profiles>
