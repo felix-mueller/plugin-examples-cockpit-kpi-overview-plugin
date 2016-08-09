@@ -2,7 +2,7 @@
 <table class="cam-table">
     <thead>
         <tr>
-        	<th>State</th>
+            <th>State</th>
             <th>Process
                 <br/>Instance</th>
             <th>Active
@@ -40,16 +40,18 @@
             <td>{{processInst.startTime}}</td>
             <td>{{processInst.endTime || '-'}}</td>
             <td>{{processInst.targetDuration}}</td>
-            <td><span tooltip="calculated based on finished process instances">{{processGeneral.avgDuration}}{{processInst.unit}}</span></td>
+            <td>
+                <span ng-if="processGeneral.avgDuration" tooltip="calculated based on finished process instances">{{processGeneral.avgDuration}} {{processInst.unit}}</span>
+                <span ng-if="!processGeneral.avgDuration" tooltip="no finished process instance yet">-</span>
+            </td>
             <td>{{processInst.currentDurationInUnit}}</td>
             <td>
                 <p ng-repeat="taskId in processInst.tasksOverdueIds">
-                	 <a ng-href="{{getLink(processInst.id,taskId)}}">{{taskId}}</a>
-               	</p>
+                    <a ng-href="{{getLink(processInst.id,taskId)}}">{{taskId}}</a>
+                </p>
             </td>
         </tr>
     </tbody>
 </table>
 
 <pagination ng-if="pages.total > pages.size" class="pagination-sm" page="pages.current" ng-model="pages.current" total-items="pages.total" items-per-page="pages.size" max-size="7" boundary-links="true"></pagination>
-

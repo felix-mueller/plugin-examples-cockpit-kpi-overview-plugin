@@ -3,25 +3,8 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
     	var overlayIDs= [];
     	$scope.cssPath = constants.CONST_PLUGIN_PATH.CSS;
         $scope.typeFilters = constants.CONST_BPMN_TYPES;
-        
-        $scope.$on('$destroy', function iVeBeenDestroyed() {
-        	angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('viewer', function(viewer) {
-            	if (viewer) {
-	                var overlays = viewer.get('overlays');
-	                overlayIDs.forEach(function(id) {
-	                	overlays.remove(id);
-	                });
-            	}
-        	});
-        });
-        
-        // get the 'creation time date' of task
-        var defaultParams = {
-            processInstanceId: $scope.processInstance.id,
-            sorting: [{sortBy: "occurrence", sortOrder: "asc"}]
-        };
 
-        //get start time for current process instance
+        //get process instance data
         $http.get(Uri.appUri(constants.CONST_REST_URLS.historyProcessInstance + $scope.processInstance.id), {}).success(function(data) {
             if ($scope.processInst) {
                 $scope.processInst.startTime = data.startTime;
@@ -38,24 +21,8 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
                         	var kpiInformation = kpiExtractor.extract(extensionElements);
                             
                         	if (kpiInformation != null && kpiInformation.kpi != null) {
-	                        	$scope.processInst.targetDuration = kpiInformation.kpi+kpiInformation.kpiunit;
-	
-	                            var creationMoment = new moment($scope.processInst.startTime);
-	                            var currentMoment = new moment();
-	                            
-	                            if ($scope.processInst.endTime) {
-	                            	currentMoment = new moment($scope.processInst.endTime);
-	                            }
-	                            
-	                            var duration = currentMoment.diff(creationMoment, kpiInformation.kpiunit);
-	                            $scope.processInst.currentDuration = duration + kpiInformation.kpiunit;
-	                            
-	                            if (duration > parseInt(kpiInformation.kpi)) {
-	                                $scope.processInst.overdue = true;
-	                                $scope.processInst.overdueDuration = (duration - parseInt(kpiInformation.kpi)) + kpiInformation.kpiunit;
-	                            } else {
-	                                $scope.processInst.overdue = false;
-	                            }
+                        		$scope.processInst.kpiInformation = kpiInformation;
+                        		$scope.processInst = calculateProcessStatistic($scope.processInst);
                         	}
                         }
                     });
@@ -63,8 +30,11 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
             });
         });
 
-
-        $http.post(Uri.appUri(constants.CONST_REST_URLS.historyActivityInstance), defaultParams).success(function(activityInstances) {
+        //get history activity instances
+        $http.post(Uri.appUri(constants.CONST_REST_URLS.historyActivityInstance), {
+            processInstanceId: $scope.processInstance.id,
+            sorting: [{sortBy: "occurrence", sortOrder: "asc"}]
+        }).success(function(activityInstances) {
         	var activityNames = [];
             var taskActivityInstances = activityInstances.filter(function(activityInstance) {
             	activityNames.push(activityInstance.activityId);
@@ -82,6 +52,7 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
                            	var bpmnElement = getMatchingBPMNElement(taskActivity, data.bpmnElements);
                            	bpmnElement.kpiData = kpiExtractor.extract(bpmnElement.extensionElements);
                            	taskActivity.bpmnElement = bpmnElement;
+                           	taskActivity.$type = bpmnElement.$type;
                             taskActivity.link = '#/process-instance/' + $scope.processInstance.id + '/history?detailsTab=kpi-overview&activityInstanceIds=' + taskActivity.id;
                             taskActivity = calculateActivityStatistic(taskActivity);
                     });
@@ -90,10 +61,47 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
                     taskActivityInstances = addBPMNElements(taskActivityInstances, data.bpmnElements);
                     $scope.taskActivityInstances = taskActivityInstances;
                     
+                } else {
+                	console.log("data null");
                 }
             });
         });
+        
+        
+        $scope.$on('$destroy', function iVeBeenDestroyed() {
+        	angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('viewer', function(viewer) {
+            	if (viewer) {
+	                var overlays = viewer.get('overlays');
+	                overlayIDs.forEach(function(id) {
+	                	overlays.remove(id);
+	                });
+            	}
+        	});
+        });
 
+
+        function calculateProcessStatistic(processInst) {
+        	processInst.targetDuration = processInst.kpiInformation.kpi + processInst.kpiInformation.kpiunit;
+        	
+            var creationMoment = new moment(processInst.startTime);
+            var currentMoment = new moment();
+            
+            if (processInst.endTime) {
+            	currentMoment = new moment(processInst.endTime);
+            }
+            
+            var duration = currentMoment.diff(creationMoment, processInst.kpiInformation.kpiunit);
+            processInst.currentDuration = duration + processInst.kpiInformation.kpiunit;
+            
+            if (duration > parseInt(processInst.kpiInformation.kpi)) {
+                processInst.overdue = true;
+                processInst.overdueDuration = (duration - parseInt(processInst.kpiInformation.kpi)) + processInst.kpiInformation.kpiunit;
+            } else {
+                processInst.overdue = false;
+            }
+            return processInst;
+        };
+        
         function calculateActivityStatistic(taskActivity) {
         	var startMoment = new moment(taskActivity.startTime);
             if (taskActivity.endTime) {
@@ -122,9 +130,14 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
         		var element = bpmnElements[key];
         		if (element.kpiData == null) {
         			element.kpiData = kpiExtractor.extract(element.extensionElements);
-        			if (element.kpiData != null && element.kpiData.kpi && constants.CONST_BPMN_TYPES.indexOf(element.$type) > -1) {
-        				taskActivityInstances.push({"bpmnElement":element});
+        		}
+        		var items = taskActivityInstances.filter(function(activity) {
+        			if (activity.bpmnElement === element) {
+        				return true;
         			}
+        		});
+        		if (element.kpiData != null && element.kpiData.kpi && constants.CONST_BPMN_TYPES.indexOf(element.$type) > -1 && items.length == 0) {
+        			taskActivityInstances.push({"$type": element.$type, "bpmnElement":element});
         		}
         	});
         	return taskActivityInstances;
@@ -141,9 +154,6 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
         			filteredTask.push(task);
         			taskIds.push(task.activityId);
         		} else if (task.overdue && index > -1) {
-        			lodash.remove(filteredTasks, {
-        			    activityId: task.activityId
-        			});
         			filteredTask.push(task);
         			taskIds.push(task.activityId);
         		}

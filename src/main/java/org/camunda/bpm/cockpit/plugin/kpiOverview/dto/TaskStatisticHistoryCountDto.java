@@ -16,5 +16,4 @@ public class TaskStatisticHistoryCountDto {
 	public void setCount(int count) {
 		this.count = count;
 	}
-
 }
