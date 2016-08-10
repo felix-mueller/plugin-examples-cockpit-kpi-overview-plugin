@@ -31,9 +31,9 @@
 <table class="cam-table">
     <thead>
         <tr>
-            <th>Activity</th>
             <th>State</th>
             <th>Overdue</th>
+            <th>Activity</th>
             <th>Target Duration</th>
             <th>Current Duration</th>
             <th>Started</th>
@@ -48,12 +48,7 @@
     </thead>
     <tbody>
         <tr ng-repeat="task in taskActivityInstances | filter:search | orderBy:['task.startTime','-task.endTime']">
-            <td>
-                <a ng-click="selectActivity(task.id)" ng-href="{{ task.link }}" ng-if="task.link" tooltip="{{ task.bpmnElement.id }}"><b>{{ task.bpmnElement.name }}</b></a>
-                <span ng-if="!task.link" tooltip="{{task.bpmnElement.id}}">
-          <b>{{task.bpmnElement.name}}</b>
-        </span>
-            </td>
+           
             <td>
                 <span tooltip="Activity completed" ng-if="task.endTime" class="glyphicon glyphicon-ok-circle"></span>
                 <span tooltip="Activity running" ng-if="!task.endTime && task.startTime" class="glyphicon glyphicon-adjust"></span>
@@ -65,7 +60,12 @@
                     <span ng-if="!task.overdue && task.startTime" tooltip="In time" class="glyphicon glyphicon-ok-sign" style="color: green;"> </span>
                 </p>
             </td>
-
+ 			<td>
+                <a ng-click="selectActivity(task.id)" ng-href="{{ task.link }}" ng-if="task.link" tooltip="{{ task.bpmnElement.id }}"><b>{{ task.bpmnElement.name }}</b></a>
+                <span ng-if="!task.link" tooltip="{{task.bpmnElement.id}}">
+          <b>{{task.bpmnElement.name}}</b>
+        </span>
+            </td>
             <td>
                 <p>
                     {{ task.bpmnElement.kpiData.kpi }} {{ task.bpmnElement.kpiData.kpiunit }}

@@ -9,8 +9,10 @@
 With the help of this Cockpit Plugin one can display KPIs that were defined within the BPMN model using the KPI Element Template provided within this repository. 
 This plugin provides two views that integrate into two extension points:
 ###Process Definition History Tab
+This view registers in 'cockpit.processDefinition.history.tab'.
 
 ###Process Instance History Tab
+This view registers in 'cockpit.processInstance.history.tab'.
 
 ## How to register a Cockpit plugin?
 

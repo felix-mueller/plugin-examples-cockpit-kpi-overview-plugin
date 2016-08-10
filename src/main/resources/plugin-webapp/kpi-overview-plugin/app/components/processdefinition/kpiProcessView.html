@@ -10,11 +10,11 @@
             <th>Completed
                 <br/>Activities</th>
             <th>ID</th>
-            <th>Start Time</th>
-            <th>End Time</th>
             <th>Target Duration</th>
-            <th>Avg Duration</th>
             <th>Current Duration</th>
+            <th>Avg Duration</th>
+            <th>Started</th>
+            <th>Finished</th>
             <th>Active overdue activities</th>
         </tr>
     </thead>
@@ -37,14 +37,15 @@
                 <span tooltip="No completed activity overdue" ng-if="processInst.completedtasksoverdue == 0" class="glyphicon glyphicon-ok-sign kpi-process-rounded-green"> </span>
             </td>
             <td><a ng-href="{{processInst.link}}" href="{{processInst.link}}">{{processInst.id}}</a></td>
-            <td>{{processInst.startTime}}</td>
-            <td>{{processInst.endTime || '-'}}</td>
+            
             <td>{{processInst.targetDuration}}</td>
+            <td>{{processInst.currentDurationInUnit}}</td>
             <td>
                 <span ng-if="processGeneral.avgDuration" tooltip="calculated based on finished process instances">{{processGeneral.avgDuration}} {{processInst.unit}}</span>
                 <span ng-if="!processGeneral.avgDuration" tooltip="no finished process instance yet">-</span>
             </td>
-            <td>{{processInst.currentDurationInUnit}}</td>
+            <td>{{processInst.startTime}}</td>
+            <td>{{processInst.endTime || '-'}}</td>
             <td>
                 <p ng-repeat="taskId in processInst.tasksOverdueIds">
                     <a ng-href="{{getLink(processInst.id,taskId)}}">{{taskId}}</a>
