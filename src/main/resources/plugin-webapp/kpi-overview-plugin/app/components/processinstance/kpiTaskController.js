@@ -78,11 +78,6 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers',[], function(module) {
             	}
         	});
         });
-
-        $scope.sendEmail = function($event, activity) {
-        	$event.preventDefault();
-        	alert("Here we could send an email..."+activity.id);
-        };
         
         function calculateProcessStatistic(processInst) {
         	processInst.targetDuration = processInst.kpiInformation.kpi + processInst.kpiInformation.kpiunit;

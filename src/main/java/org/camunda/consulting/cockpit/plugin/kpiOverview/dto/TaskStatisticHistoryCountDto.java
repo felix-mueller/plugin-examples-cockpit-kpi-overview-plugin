@@ -1,4 +1,4 @@
-package org.camunda.bpm.cockpit.plugin.kpiOverview.dto;
+package org.camunda.consulting.cockpit.plugin.kpioverview.dto;
 
 public class TaskStatisticHistoryCountDto {
 	private String activityId;

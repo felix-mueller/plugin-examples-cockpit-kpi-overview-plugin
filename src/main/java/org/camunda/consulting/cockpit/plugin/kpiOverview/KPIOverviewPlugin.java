@@ -1,12 +1,12 @@
-package org.camunda.bpm.cockpit.plugin.kpiOverview;
+package org.camunda.consulting.cockpit.plugin.kpioverview;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.camunda.bpm.cockpit.plugin.kpiOverview.resources.KPIOverviewPluginRootResource;
 import org.camunda.bpm.cockpit.plugin.spi.impl.AbstractCockpitPlugin;
+import org.camunda.consulting.cockpit.plugin.kpioverview.resources.KPIOverviewPluginRootResource;
 
 public class KPIOverviewPlugin extends AbstractCockpitPlugin {
 
@@ -27,6 +27,6 @@ public class KPIOverviewPlugin extends AbstractCockpitPlugin {
   
   @Override
   public List<String> getMappingFiles() {
-    return Arrays.asList("org/camunda/bpm/cockpit/plugin/kpi/queries/camunda-kpi-queries.xml");
+    return Arrays.asList("org/camunda/consulting/cockpit/plugin/kpi/queries/camunda-kpi-queries.xml");
   }
 }

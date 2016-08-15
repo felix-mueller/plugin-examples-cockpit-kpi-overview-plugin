@@ -56,7 +56,6 @@
             <td>
                 <p>
                     <span ng-if="task.overdue" tooltip="Overdue for {{task.overdueTime}}" class="glyphicon glyphicon-exclamation-sign" style="color:#b5152b;"> </span>
-                    <a href="#" ng-click="sendEmail($event,task)" ng-if="task.overdue && !task.endTime && task.$type=='bpmn:UserTask'" tooltip="Send reminder email to task candiate group or assignee" class="glyphicon glyphicon-envelope"> </a>
                     <span ng-if="!task.overdue && task.startTime" tooltip="In time" class="glyphicon glyphicon-ok-sign" style="color: green;"> </span>
                 </p>
             </td>

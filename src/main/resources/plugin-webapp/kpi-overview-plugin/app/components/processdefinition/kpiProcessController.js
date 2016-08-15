@@ -232,25 +232,24 @@ ngDefine('cockpit.plugin.kpi-overview-plugin.controllers', [], function(module) 
 
         function addOverlay(task, amount) {
             angular.element($('[cam-widget-bpmn-viewer]')).scope().$watch('viewer', function(viewer) {
-                var overlays = viewer.get('overlays');
-                var htmlElement = angular.element('<div class="kpi-process-overlay-info" tooltip-animation="false" tooltip-placement="top" tooltip="' + amount + ' running Activity Instances overdue"><span>' + amount + '</span></div>');
-                var $element = $(htmlElement);
-                if (amount === 0) {
-                    $element.css('background-color', 'green');
+                if (amount > 0) {
+	            	var overlays = viewer.get('overlays');
+	                var htmlElement = angular.element('<div class="kpi-process-overlay-info" tooltip-animation="false" tooltip-placement="top" tooltip="' + amount + ' running Activity Instances overdue"><span>' + amount + '</span></div>');
+	                var $element = $(htmlElement);
+	                var overlay = overlays.add(task, {
+	                    position: {
+	                        top: -10,
+	                        right: 10
+	                    },
+	                    show: {
+	                        minZoom: Number.NEGATIVE_INFINITY,
+	                        maxZoom: Number.POSITIVE_INFINITY
+	                    },
+	                    html: $element
+	                });
+	                $compile($element[0])($scope);
+	                overlayIDs.push(overlay);
                 }
-                var overlay = overlays.add(task, {
-                    position: {
-                        top: -10,
-                        right: 10
-                    },
-                    show: {
-                        minZoom: Number.NEGATIVE_INFINITY,
-                        maxZoom: Number.POSITIVE_INFINITY
-                    },
-                    html: $element
-                });
-                $compile($element[0])($scope);
-                overlayIDs.push(overlay);
             });
         }
 

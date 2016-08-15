@@ -1,2 +1,7 @@
-org/camunda/bpm/cockpit/plugin/kpiOverview/dto/TaskStatisticHistoryDto.class
-org/camunda/bpm/cockpit/plugin/kpiOverview/KPIOverviewPlugin.class
+org/camunda/consulting/cockpit/plugin/kpioverview/KPIOverviewPlugin.class
+org/camunda/consulting/cockpit/plugin/kpioverview/resources/KPIStatisticsResource.class
+org/camunda/consulting/cockpit/plugin/kpioverview/dto/TaskStatisticHistoryDto.class
+org/camunda/consulting/cockpit/plugin/kpioverview/resources/KPIStatisticsResource$1.class
+org/camunda/consulting/cockpit/plugin/kpioverview/resources/KPIOverviewPluginRootResource.class
+org/camunda/consulting/cockpit/plugin/kpioverview/StatisticData.class
+org/camunda/consulting/cockpit/plugin/kpioverview/dto/TaskStatisticHistoryCountDto.class

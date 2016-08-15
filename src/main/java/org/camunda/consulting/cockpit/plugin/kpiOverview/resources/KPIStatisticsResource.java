@@ -1,4 +1,4 @@
-package org.camunda.bpm.cockpit.plugin.kpiOverview.resources;
+package org.camunda.consulting.cockpit.plugin.kpioverview.resources;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,10 +8,10 @@ import java.util.List;
 import javax.ws.rs.GET;
 
 import org.camunda.bpm.cockpit.db.QueryParameters;
-import org.camunda.bpm.cockpit.plugin.kpiOverview.StatisticData;
-import org.camunda.bpm.cockpit.plugin.kpiOverview.dto.TaskStatisticHistoryCountDto;
-import org.camunda.bpm.cockpit.plugin.kpiOverview.dto.TaskStatisticHistoryDto;
 import org.camunda.bpm.cockpit.plugin.resource.AbstractCockpitPluginResource;
+import org.camunda.consulting.cockpit.plugin.kpioverview.dto.TaskStatisticHistoryCountDto;
+import org.camunda.consulting.cockpit.plugin.kpioverview.dto.TaskStatisticHistoryDto;
+import org.camunda.consulting.cockpit.plugin.kpioverview.StatisticData;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;

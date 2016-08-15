@@ -1,4 +1,4 @@
-package org.camunda.bpm.cockpit.plugin.kpiOverview.dto;
+package org.camunda.consulting.cockpit.plugin.kpioverview.dto;
 
 import java.util.Date;
 

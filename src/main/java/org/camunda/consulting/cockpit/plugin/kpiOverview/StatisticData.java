@@ -1,4 +1,4 @@
-package org.camunda.bpm.cockpit.plugin.kpiOverview;
+package org.camunda.consulting.cockpit.plugin.kpioverview;
 
 public class StatisticData {
 	private String taskId;
